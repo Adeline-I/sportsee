@@ -1,0 +1,39 @@
+name: Sync PR metadata
+
+on:
+  pull_request:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v9
+        with:
+          script: |
+            // Cherche "Closes #X" (ou Fixes / Resolves) dans la description de la PR
+            const pr = context.payload.pull_request;
+            const match = (pr.body || "").match(/(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#(\d+)/i);
+
+            if (!match) {
+              core.info("Aucune issue liée trouvée.");
+              return;
+            }
+
+            // Récupère l'issue liée puis recopie ses infos sur la PR
+            const { data: issue } = await github.rest.issues.get({
+              ...context.repo,
+              issue_number: Number(match[1]),
+            });
+
+            await github.rest.issues.update({
+              ...context.repo,
+              issue_number: pr.number,
+              labels: issue.labels.map((label) => label.name),
+              milestone: issue.milestone?.number ?? null,
+              assignees: issue.assignees.map((user) => user.login),
+            });
