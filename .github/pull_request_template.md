@@ -16,6 +16,7 @@ Closes #
 
 ## Checklist
 
+- [ ] `pnpm lint` sans erreur
 - [ ] `pnpm typecheck` sans erreur
 - [ ] `pnpm build` sans erreur
 - [ ] Console du navigateur sans erreur
