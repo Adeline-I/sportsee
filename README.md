@@ -1,87 +1,33 @@
-# Welcome to React Router!
+# SportSee
 
-A modern, production-ready template for building full-stack React applications using React Router.
+Tableau de bord d'activité sportive.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+## Prérequis
 
-## Features
+- [Node.js](https://nodejs.org/) 24 (LTS)
+- [pnpm](https://pnpm.io/)
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
-
-## Getting Started
-
-### Installation
-
-Install the dependencies:
+## Installation
 
 ```bash
-npm install
+git clone https://github.com/Adeline-I/sportsee.git
+cd sportsee
+pnpm install
 ```
 
-### Development
-
-Start the development server with HMR:
+## Lancement
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
-Your application will be available at `http://localhost:5173`.
+L'application est disponible sur http://localhost:5173.
 
-## Building for Production
+## Scripts
 
-Create a production build:
-
-```bash
-npm run build
-```
-
-## Deployment
-
-### Docker Deployment
-
-To build and run using Docker:
-
-```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
-```
-
-The containerized application can be deployed to any platform that supports Docker, including:
-
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.
+| Commande         | Rôle                                            |
+| ---------------- | ----------------------------------------------- |
+| `pnpm dev`       | lance le serveur de développement               |
+| `pnpm build`     | construit la version finale dans `build/client` |
+| `pnpm typecheck` | vérifie les types TypeScript                    |
+| `pnpm lint`      | vérifie le code avec ESLint                     |
