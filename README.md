@@ -23,6 +23,25 @@ pnpm dev
 
 L'application est disponible sur http://localhost:5173.
 
+## Backend
+
+L'application utilise l'API SportSee : [Adeline-I/sportsee-backend](https://github.com/Adeline-I/sportsee-backend). Ce backend utilise npm et son `package-lock.json`.
+
+```bash
+git clone https://github.com/Adeline-I/sportsee-backend.git
+cd sportsee-backend
+npm ci
+npm start
+```
+
+L'API est disponible sur http://localhost:8000. Les identifiants de démo sont dans le [README du backend](https://github.com/Adeline-I/sportsee-backend#41-available-users).
+
+## Postman
+
+1. Importer les deux fichiers du dossier `postman/`.
+2. Sélectionner l'environnement **Local**.
+3. Lancer la requête **Login** : le token est ensuite réutilisé automatiquement par les autres requêtes.
+
 ## Scripts
 
 | Commande         | Rôle                                            |
