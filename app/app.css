@@ -10,6 +10,8 @@
   --color-gray: #111111;
   --color-orange: #f4320b;
   --color-blue: #0b23f4;
+  --color-blue-70: #5465f7;
+  --color-gray-10: #e7e7e7;
 
   --text-*: initial;
   --text-h1: 3rem;
@@ -28,6 +30,8 @@
   --text-body-sm--font-weight: 400;
   --text-caption: 0.625rem;
   --text-caption--font-weight: 400;
+  --container-page: 71.25rem;
+  --container-footer: 77.5rem;
 }
 
 body {
