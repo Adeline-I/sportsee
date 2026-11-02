@@ -15,6 +15,15 @@ cd sportsee
 pnpm install
 ```
 
+## Configuration
+
+Copier `.env.example` en `.env`, puis choisir la source des données :
+
+| Variable           | Rôle                                                      |
+| ------------------ | --------------------------------------------------------- |
+| `VITE_DATA_SOURCE` | `api` (backend lancé) ou `mock` (fichiers de `app/mocks`) |
+| `VITE_API_URL`     | adresse du backend                                        |
+
 ## Lancement
 
 ```bash
