@@ -15,8 +15,9 @@ export const login = async (
 export const getUserInfo = async (_token: string): Promise<ApiUserInfo> =>
   userInfoMock;
 
-// Garde les séances entre les deux dates, comme le backend
-// (les dates "AAAA-MM-JJ" se comparent directement comme du texte)
+// Garde les séances entre les deux dates, bornes comprises
+// (le backend exclut aussi les dates futures : le mock n'en contient pas)
+// Les dates "AAAA-MM-JJ" se comparent directement comme du texte
 export const getUserActivity = async (
   _token: string,
   startWeek: string,

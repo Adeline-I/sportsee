@@ -4,9 +4,16 @@ import * as apiSource from "./api-source";
 import * as mockSource from "./mock-source";
 import { normalizeActivity, normalizeUser } from "./normalize";
 
-// "mock" dans .env → fichiers JSON, sinon → vrai backend
-const source =
-  import.meta.env.VITE_DATA_SOURCE === "mock" ? mockSource : apiSource;
+const dataSource = import.meta.env.VITE_DATA_SOURCE;
+
+// Fichier .env absent ou mal rempli
+if (dataSource !== "api" && dataSource !== "mock") {
+  throw new Error(
+    'VITE_DATA_SOURCE doit valoir "api" ou "mock" : vérifiez le fichier .env',
+  );
+}
+
+const source = dataSource === "mock" ? mockSource : apiSource;
 
 // La réponse de connexion est déjà utilisable : rien à standardiser
 export const login = (username: string, password: string) =>
