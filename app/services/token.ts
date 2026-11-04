@@ -1,6 +1,6 @@
 // Token de connexion, rangé dans un cookie
 
-const COOKIE_NAME = "token";
+const COOKIE_NAME = "sportsee_token";
 const MAX_AGE = 60 * 60 * 24; // 24 h en secondes, comme le token du backend
 
 // path=/ : cookie disponible sur toutes les pages
