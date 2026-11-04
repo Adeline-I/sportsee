@@ -8,7 +8,7 @@ type ButtonProps = {
 };
 
 const buttonClass =
-  "cursor-pointer rounded-[10px] bg-blue px-10 py-4 text-center text-body-lg text-gray-10 hover:bg-blue-70 focus-visible:bg-blue-70";
+  "cursor-pointer rounded-[10px] bg-blue px-10 py-4 text-center text-body-lg text-gray-10 hover:bg-blue-70 focus-visible:bg-blue-70 disabled:cursor-default disabled:bg-gray-10 disabled:text-gray/60";
 
 const Button = ({ children, to, type = "button" }: ButtonProps) =>
   to ? (
