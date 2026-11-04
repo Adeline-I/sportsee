@@ -20,7 +20,7 @@ export const useLogin = () => {
       navigate("/dashboard", { replace: true });
     } catch (error) {
       setError(error as Error); // les services ne lancent que des Error
-    } finally {
+      // Seulement en cas d'échec : après un succès, le formulaire reste désactivé jusqu'à l'affichage du tableau de bord
       setIsSubmitting(false);
     }
   };
