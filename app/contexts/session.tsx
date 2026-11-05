@@ -1,13 +1,19 @@
 // Contexte de session : partage le token et les actions de connexion / déconnexion
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useState,
+  type ReactNode,
+} from "react";
 import { useNavigate } from "react-router";
 import { getToken, removeToken, saveToken } from "~/services/token";
 
 type Session = {
   token?: string; // absent = personne n'est connecté
   signIn: (token: string) => void;
-  signOut: () => void;
+  signOut: (message?: string) => void;
 };
 
 const SessionContext = createContext<Session | null>(null);
@@ -26,12 +32,17 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     navigate("/dashboard", { replace: true });
   };
 
-  const signOut = () => {
-    removeToken();
-    setToken(undefined);
-    // replace : le bouton « Retour » ne ramène pas à la page quittée
-    navigate("/", { replace: true });
-  };
+  // useCallback : signOut est utilisée dans l'effet de useData, elle doit rester la même fonction pour ne pas relancer le chargement
+  const signOut = useCallback(
+    (message?: string) => {
+      removeToken();
+      setToken(undefined);
+      // replace : le bouton « Retour » ne ramène pas à la page quittée
+      // state : message à afficher sur la page de connexion (session expirée)
+      navigate("/", { replace: true, state: { message } });
+    },
+    [navigate],
+  );
 
   return (
     <SessionContext value={{ token, signIn, signOut }}>

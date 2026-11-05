@@ -1,5 +1,5 @@
-import type { SubmitEvent } from "react";
-import { redirect } from "react-router";
+import { useEffect, useState, type SubmitEvent } from "react";
+import { redirect, useLocation, useNavigate } from "react-router";
 import loginPhoto from "~/assets/login-photo.webp";
 import Button from "~/components/Button";
 import ErrorMessage from "~/components/ErrorMessage";
@@ -24,6 +24,21 @@ const fieldClass =
 
 const Login = () => {
   const { login, error, isSubmitting } = useLogin();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Message laissé par une déconnexion automatique (session expirée) : lu une seule fois et gardé
+  const [sessionMessage] = useState<string | undefined>(
+    location.state?.message,
+  );
+
+  // Puis effacé de l'historique : il ne réapparaît pas si on recharge la page
+  useEffect(() => {
+    if (location.state) navigate("/", { replace: true });
+  }, [location.state, navigate]);
+
+  // L'erreur de connexion passe avant le message de session
+  const message = error?.message ?? sessionMessage;
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -72,7 +87,7 @@ const Login = () => {
                   className={fieldClass}
                 />
               </div>
-              {error && <ErrorMessage message={error.message} />}
+              {message && <ErrorMessage message={message} />}
               <Button type="submit">Se connecter</Button>
             </fieldset>
             <p className="text-body">Mot de passe oublié ?</p>
