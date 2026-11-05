@@ -1,13 +1,22 @@
 import type { SubmitEvent } from "react";
+import { redirect } from "react-router";
 import loginPhoto from "~/assets/login-photo.webp";
 import Button from "~/components/Button";
 import ErrorMessage from "~/components/ErrorMessage";
 import Logo from "~/components/Logo";
 import { useLogin } from "~/hooks/use-login";
+import { getToken } from "~/services/token";
 import type { Route } from "./+types/login";
 
 export const meta: Route.MetaFunction = () => [
   { title: "Connexion – SportSee" },
+];
+
+// Déjà connecté : pas besoin du formulaire, direction le dashboard
+export const clientMiddleware: Route.ClientMiddlewareFunction[] = [
+  () => {
+    if (getToken()) throw redirect("/dashboard");
+  },
 ];
 
 const fieldClass =
