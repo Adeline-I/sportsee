@@ -34,7 +34,7 @@ const Login = () => {
 
   // Puis effacé de l'historique : il ne réapparaît pas si on recharge la page
   useEffect(() => {
-    if (location.state) navigate("/", { replace: true });
+    if (location.state?.message) navigate("/", { replace: true });
   }, [location.state, navigate]);
 
   // L'erreur de connexion passe avant le message de session

@@ -21,7 +21,10 @@ export const useData = <T>(load: (token: string) => Promise<T>) => {
       .catch((error) => {
         if (ignore) return;
         // 401 / 403 : token absent, invalide ou expiré → déconnexion
-        if (error.cause === 401 || error.cause === 403) {
+        if (
+          error instanceof Error &&
+          (error.cause === 401 || error.cause === 403)
+        ) {
           signOut(error.message);
         } else {
           setResult({ error });

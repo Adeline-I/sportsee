@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useMemo,
   useState,
   type ReactNode,
 } from "react";
@@ -25,12 +26,16 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
 
   // Le cookie est toujours écrit ou supprimé avant de changer de page : les middlewares des routes le lisent pour autoriser ou rediriger
 
-  const signIn = (newToken: string) => {
-    saveToken(newToken);
-    setToken(newToken);
-    // replace : le bouton « Retour » ne ramène pas à la page de connexion
-    navigate("/dashboard", { replace: true });
-  };
+  // useCallback : signIn reste la même fonction (utile pour le useMemo plus bas)
+  const signIn = useCallback(
+    (newToken: string) => {
+      saveToken(newToken);
+      setToken(newToken);
+      // replace : le bouton « Retour » ne ramène pas à la page de connexion
+      navigate("/dashboard", { replace: true });
+    },
+    [navigate],
+  );
 
   // useCallback : signOut est utilisée dans l'effet de useData, elle doit rester la même fonction pour ne pas relancer le chargement
   const signOut = useCallback(
@@ -44,11 +49,13 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     [navigate],
   );
 
-  return (
-    <SessionContext value={{ token, signIn, signOut }}>
-      {children}
-    </SessionContext>
+  // useMemo : même objet tant que rien ne change, les composants qui lisent la session ne se réaffichent pas pour rien
+  const session = useMemo(
+    () => ({ token, signIn, signOut }),
+    [token, signIn, signOut],
   );
+
+  return <SessionContext value={session}>{children}</SessionContext>;
 };
 
 // Les composants lisent la session avec ce hook, jamais avec SessionContext directement
