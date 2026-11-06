@@ -2,7 +2,11 @@
 // Le token est fourni par useData : les composants n'ont pas à s'en occuper
 
 import { useCallback } from "react";
-import { getUserActivity, getUserInfo } from "~/services/data-service";
+import {
+  getProfile,
+  getUserActivity,
+  getUserInfo,
+} from "~/services/data-service";
 import { useData } from "./use-data";
 
 // Profil et statistiques
@@ -16,3 +20,6 @@ export const useUserActivity = (startWeek: string, endWeek: string) => {
   );
   return useData(load);
 };
+
+// Page profil : profil, statistiques, calories et jours de repos
+export const useProfile = () => useData(getProfile);
