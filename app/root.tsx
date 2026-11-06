@@ -7,6 +7,7 @@ import {
   ScrollRestoration,
 } from "react-router";
 import Loader from "~/components/Loader";
+import { SessionProvider } from "~/contexts/session";
 import type { Route } from "./+types/root";
 import "./app.css";
 
@@ -37,7 +38,11 @@ export function HydrateFallback() {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <SessionProvider>
+      <Outlet />
+    </SessionProvider>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {

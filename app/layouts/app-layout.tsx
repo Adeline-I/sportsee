@@ -1,6 +1,16 @@
-import { Outlet } from "react-router";
+import { Outlet, redirect } from "react-router";
 import Footer from "~/components/Footer";
 import Header from "~/components/Header";
+import { getToken } from "~/services/token";
+import type { Route } from "./+types/app-layout";
+
+// Avant d'afficher une page connectée : sans token, retour à la connexion
+// (le middleware tourne hors de React : il lit le cookie, pas le contexte)
+export const clientMiddleware: Route.ClientMiddlewareFunction[] = [
+  () => {
+    if (!getToken()) throw redirect("/");
+  },
+];
 
 const AppLayout = () => (
   <div className="flex min-h-screen flex-col">

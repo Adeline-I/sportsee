@@ -1,26 +1,18 @@
 // Hooks des données de l'utilisateur : les composants les utilisent au lieu d'appeler data-service eux-mêmes
+// Le token est fourni par useData : les composants n'ont pas à s'en occuper
 
 import { useCallback } from "react";
 import { getUserActivity, getUserInfo } from "~/services/data-service";
 import { useData } from "./use-data";
 
 // Profil et statistiques
-export const useUserInfo = (token: string) => {
-  // Même fonction tant que le token ne change pas
-  const load = useCallback(() => getUserInfo(token), [token]);
-  return useData(load);
-};
+export const useUserInfo = () => useData(getUserInfo);
 
 // Activité entre deux dates ("AAAA-MM-JJ")
-export const useUserActivity = (
-  token: string,
-  startWeek: string,
-  endWeek: string,
-) => {
-  // Nouvelle fonction seulement si le token ou les dates changent
+export const useUserActivity = (startWeek: string, endWeek: string) => {
   const load = useCallback(
-    () => getUserActivity(token, startWeek, endWeek),
-    [token, startWeek, endWeek],
+    (token: string) => getUserActivity(token, startWeek, endWeek),
+    [startWeek, endWeek],
   );
   return useData(load);
 };
