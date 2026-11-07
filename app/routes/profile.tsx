@@ -1,6 +1,7 @@
 import ErrorMessage from "~/components/ErrorMessage";
 import Loader from "~/components/Loader";
 import ProfileDetails from "~/components/ProfileDetails";
+import ProfileStatistics from "~/components/ProfileStatistics";
 import UserIdentity from "~/components/UserIdentity";
 import { useProfile } from "~/hooks/use-user-data";
 import type { Route } from "./+types/profile";
@@ -27,6 +28,12 @@ const Profile = () => {
             </div>
             <ProfileDetails profile={data.user.profile} />
           </div>
+          <ProfileStatistics
+            statistics={data.user.statistics}
+            caloriesBurned={data.caloriesBurned}
+            restDays={data.restDays}
+            createdAt={data.user.profile.createdAt}
+          />
         </div>
       )}
     </>

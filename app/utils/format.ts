@@ -27,3 +27,9 @@ export const splitDuration = (totalMinutes: number) => ({
   hours: Math.floor(totalMinutes / 60),
   minutes: totalMinutes % 60,
 });
+
+const pluralRules = new Intl.PluralRules("fr-FR");
+
+// (1, "jour", "jours") → "jour" ; (0, …) → "jour" ; (2, …) → "jours"
+export const pluralize = (count: number, singular: string, plural: string) =>
+  pluralRules.select(count) === "one" ? singular : plural;
