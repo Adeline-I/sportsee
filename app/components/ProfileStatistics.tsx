@@ -23,7 +23,11 @@ const ProfileStatistics = ({
   const { hours, minutes } = splitDuration(statistics.totalDuration);
 
   const stats = [
-    { label: "Temps total couru", value: `${hours}h`, unit: `${minutes}min` },
+    {
+      label: "Temps total couru",
+      value: `${formatNumber(hours)}h`,
+      unit: `${minutes}min`,
+    },
     {
       label: "Calories brûlées",
       value: formatNumber(caloriesBurned),
