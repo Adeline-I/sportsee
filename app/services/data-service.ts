@@ -1,5 +1,6 @@
 // Point d'entrée des données pour l'application : choisit la source (mock ou API), puis standardise les données
 
+import { countRestDays, sumCalories } from "~/utils/activity";
 import * as apiSource from "./api-source";
 import * as mockSource from "./mock-source";
 import { normalizeActivity, normalizeUser } from "./normalize";
@@ -27,3 +28,28 @@ export const getUserActivity = async (
   startWeek: string,
   endWeek: string,
 ) => normalizeActivity(await source.getUserActivity(token, startWeek, endWeek));
+
+// Date → "AAAA-MM-JJ" en heure locale
+const toApiDate = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // janvier = 0 devient 01
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+// Page profil : le profil, puis l'activité de l'inscription à aujourd'hui, puis les calculs
+export const getProfile = async (token: string) => {
+  const user = await getUserInfo(token);
+
+  const start = user.profile.createdAt;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // minuit : on compte des jours entiers
+
+  const days = await getUserActivity(token, toApiDate(start), toApiDate(today));
+
+  return {
+    user,
+    caloriesBurned: sumCalories(days),
+    restDays: countRestDays(days, start, today),
+  };
+};
