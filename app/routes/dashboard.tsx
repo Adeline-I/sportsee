@@ -1,8 +1,9 @@
+import CurrentWeek from "~/components/CurrentWeek";
 import ErrorMessage from "~/components/ErrorMessage";
 import Loader from "~/components/Loader";
 import TotalDistance from "~/components/TotalDistance";
 import UserIdentity from "~/components/UserIdentity";
-import { useUserInfo } from "~/hooks/use-user-data";
+import { useDashboard } from "~/hooks/use-user-data";
 import type { Route } from "./+types/dashboard";
 
 export const meta: Route.MetaFunction = () => [
@@ -10,7 +11,7 @@ export const meta: Route.MetaFunction = () => [
 ];
 
 const Dashboard = () => {
-  const { data, error, isLoading } = useUserInfo();
+  const { data, error, isLoading } = useDashboard();
 
   return (
     <>
@@ -20,11 +21,17 @@ const Dashboard = () => {
       {error && <ErrorMessage message={error.message} />}
 
       {data && (
-        <div className="xl:px-11">
+        <div className="flex flex-col gap-27 xl:px-11">
           <div className="flex flex-wrap items-center justify-between gap-6 rounded-[20px] bg-linear-to-t from-white/0 to-white px-6 py-8 lg:px-13">
-            <UserIdentity profile={data.profile} className="gap-9.5" />
-            <TotalDistance distance={data.statistics.totalDistance} />
+            <UserIdentity profile={data.user.profile} className="gap-9.5" />
+            <TotalDistance distance={data.user.statistics.totalDistance} />
           </div>
+          <CurrentWeek
+            start={data.week.start}
+            end={data.week.end}
+            duration={data.week.duration}
+            distance={data.week.distance}
+          />
         </div>
       )}
     </>

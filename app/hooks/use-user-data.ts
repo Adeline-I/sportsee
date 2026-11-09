@@ -3,6 +3,7 @@
 
 import { useCallback } from "react";
 import {
+  getDashboard,
   getProfile,
   getUserActivity,
   getUserInfo,
@@ -23,3 +24,6 @@ export const useUserActivity = (startWeek: string, endWeek: string) => {
 
 // Page profil : profil, statistiques, calories et jours de repos
 export const useProfile = () => useData(getProfile);
+
+// Dashboard : profil, statistiques et totaux de la semaine en cours
+export const useDashboard = () => useData(getDashboard);

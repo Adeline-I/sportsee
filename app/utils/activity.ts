@@ -8,6 +8,17 @@ const DAY_IN_MS = 24 * 60 * 60 * 1000;
 export const sumCalories = (days: DailyActivity[]) =>
   days.reduce((total, day) => total + day.caloriesBurned, 0);
 
+// Totaux : nombre de séances, durée (minutes) et distance (km)
+export const sumActivity = (days: DailyActivity[]) =>
+  days.reduce(
+    (total, day) => ({
+      sessions: total.sessions + day.sessions,
+      duration: total.duration + day.duration,
+      distance: total.distance + day.distance,
+    }),
+    { sessions: 0, duration: 0, distance: 0 },
+  );
+
 // Jours sans séance entre deux dates à minuit, bornes comprises
 export const countRestDays = (
   days: DailyActivity[],
