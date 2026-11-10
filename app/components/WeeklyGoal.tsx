@@ -56,8 +56,8 @@ const renderLabel = ({
 
   return (
     <foreignObject
-      x={x - LABEL_WIDTH * shift}
-      y={y - LABEL_HEIGHT / 2}
+      x={Math.round(x - LABEL_WIDTH * shift)}
+      y={Math.round(y - LABEL_HEIGHT / 2)}
       width={LABEL_WIDTH}
       height={LABEL_HEIGHT}
     >
