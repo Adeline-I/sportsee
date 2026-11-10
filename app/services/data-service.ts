@@ -1,6 +1,7 @@
 // Point d'entrée des données pour l'application : choisit la source (mock ou API), puis standardise les données
 
-import { countRestDays, sumCalories } from "~/utils/activity";
+import { countRestDays, sumActivity, sumCalories } from "~/utils/activity";
+import { getWeek } from "~/utils/date";
 import * as apiSource from "./api-source";
 import * as mockSource from "./mock-source";
 import { normalizeActivity, normalizeUser } from "./normalize";
@@ -52,4 +53,17 @@ export const getProfile = async (token: string) => {
     caloriesBurned: sumCalories(days),
     restDays: countRestDays(days, start, today),
   };
+};
+
+// Dashboard : le profil et l'activité de la semaine en cours, puis les totaux de la semaine
+export const getDashboard = async (token: string) => {
+  const { start, end } = getWeek(new Date());
+
+  // Les deux requêtes sont indépendantes : on les lance en même temps
+  const [user, days] = await Promise.all([
+    getUserInfo(token),
+    getUserActivity(token, toApiDate(start), toApiDate(end)),
+  ]);
+
+  return { user, week: { start, end, ...sumActivity(days) } };
 };

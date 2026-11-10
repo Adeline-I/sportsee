@@ -1,0 +1,14 @@
+// Calculs de calendrier, en heure locale
+
+// Semaine d'une date : du lundi au dimanche, à minuit
+export const getWeek = (date: Date) => {
+  const start = new Date(date);
+  start.setHours(0, 0, 0, 0);
+  // getDay() : dimanche = 0, lundi = 1… ; (jour + 6) % 7 = nombre de jours depuis lundi
+  start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
+
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+
+  return { start, end };
+};

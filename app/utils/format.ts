@@ -6,11 +6,20 @@ const dateFormat = new Intl.DateTimeFormat("fr-FR", {
   year: "numeric",
 });
 
+const shortDateFormat = new Intl.DateTimeFormat("fr-FR", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+});
+
 const numberFormat = new Intl.NumberFormat("fr-FR");
 
 // Date → "14 juin 2023" (Intl écrit "1 janvier" : on corrige en "1er janvier")
 export const formatDate = (date: Date) =>
   dateFormat.format(date).replace(/^1 /, "1er ");
+
+// Date → "02/11/2026"
+export const formatShortDate = (date: Date) => shortDateFormat.format(date);
 
 // 2250.2 → "2 250,2" (espace entre les milliers, virgule décimale)
 export const formatNumber = (value: number) => numberFormat.format(value);

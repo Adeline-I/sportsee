@@ -15,6 +15,8 @@ export type User = {
     totalSessions: number;
     totalDuration: number; // minutes
   };
+  /** Nombre de courses visées par semaine */
+  weeklyGoal: number;
 };
 
 // Activité d'une journée : toutes les séances du jour regroupées

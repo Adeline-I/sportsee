@@ -24,7 +24,7 @@ const Profile = () => {
         <div className="grid gap-14.25 lg:grid-cols-[508fr_575fr]">
           <div className="flex flex-col gap-4">
             <div className="rounded-[10px] bg-white py-6 pr-13 pl-8 shadow-card">
-              <UserIdentity profile={data.user.profile} />
+              <UserIdentity profile={data.user.profile} className="gap-6" />
             </div>
             <ProfileDetails profile={data.user.profile} />
           </div>

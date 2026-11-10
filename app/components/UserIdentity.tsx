@@ -3,10 +3,11 @@ import { formatDate } from "~/utils/format";
 
 type UserIdentityProps = {
   profile: User["profile"];
+  className: string; // écart entre la photo et le texte : il change selon la page
 };
 
-const UserIdentity = ({ profile }: UserIdentityProps) => (
-  <div className="flex items-center gap-6">
+const UserIdentity = ({ profile, className }: UserIdentityProps) => (
+  <div className={`flex items-center ${className}`}>
     <img
       src={profile.profilePicture}
       alt=""
