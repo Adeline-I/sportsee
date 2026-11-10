@@ -6,6 +6,9 @@ import type { ApiSession, ApiUserInfo } from "./api-types";
 // "2025-01-04" → 4 janvier 2025 à minuit, heure française
 const toLocalDate = (text: string) => new Date(`${text}T00:00`);
 
+/** L'API ne renvoie pas encore l'objectif hebdomadaire : valeur de la maquette en attendant */
+const DEFAULT_WEEKLY_GOAL = 6;
+
 // Profil : on garde tout, sauf la date d'inscription (texte → date) et la distance totale (texte → nombre)
 export const normalizeUser = ({ profile, statistics }: ApiUserInfo): User => ({
   profile: { ...profile, createdAt: toLocalDate(profile.createdAt) },
@@ -13,6 +16,7 @@ export const normalizeUser = ({ profile, statistics }: ApiUserInfo): User => ({
     ...statistics,
     totalDistance: Number(statistics.totalDistance),
   },
+  weeklyGoal: DEFAULT_WEEKLY_GOAL,
 });
 
 // Activité : une entrée par jour, même si le jour compte plusieurs séances (les séances arrivent triées par date)

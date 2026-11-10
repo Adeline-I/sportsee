@@ -29,6 +29,8 @@ const Dashboard = () => {
           <CurrentWeek
             start={data.week.start}
             end={data.week.end}
+            sessions={data.week.sessions}
+            goal={data.user.weeklyGoal}
             duration={data.week.duration}
             distance={data.week.distance}
           />
