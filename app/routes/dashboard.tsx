@@ -1,5 +1,6 @@
 import CurrentWeek from "~/components/CurrentWeek";
 import ErrorMessage from "~/components/ErrorMessage";
+import LatestPerformances from "~/components/LatestPerformances";
 import Loader from "~/components/Loader";
 import TotalDistance from "~/components/TotalDistance";
 import UserIdentity from "~/components/UserIdentity";
@@ -26,14 +27,17 @@ const Dashboard = () => {
             <UserIdentity profile={data.user.profile} className="gap-9.5" />
             <TotalDistance distance={data.user.statistics.totalDistance} />
           </div>
-          <CurrentWeek
-            start={data.week.start}
-            end={data.week.end}
-            sessions={data.week.sessions}
-            goal={data.user.weeklyGoal}
-            duration={data.week.duration}
-            distance={data.week.distance}
-          />
+          <div className="flex flex-col gap-17.75">
+            <LatestPerformances createdAt={data.user.profile.createdAt} />
+            <CurrentWeek
+              start={data.week.start}
+              end={data.week.end}
+              sessions={data.week.sessions}
+              goal={data.user.weeklyGoal}
+              duration={data.week.duration}
+              distance={data.week.distance}
+            />
+          </div>
         </div>
       )}
     </>
