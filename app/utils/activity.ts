@@ -19,14 +19,18 @@ export const sumActivity = (days: DailyActivity[]) =>
     { sessions: 0, duration: 0, distance: 0 },
   );
 
+/** Nombre de jours entre deux dates à minuit, bornes comprises (ex. : lundi → dimanche = 7 jours) */
+const countDays = (start: Date, end: Date) => {
+  const gapInDays = (end.getTime() - start.getTime()) / DAY_IN_MS;
+  return Math.round(gapInDays) + 1;
+};
+
 // Jours sans séance entre deux dates à minuit, bornes comprises
-export const countRestDays = (
-  days: DailyActivity[],
-  start: Date,
-  end: Date,
-) => {
-  // Arrondi : au changement d'heure, un jour dure 23 h ou 25 h
-  const totalDays =
-    Math.round((end.getTime() - start.getTime()) / DAY_IN_MS) + 1;
-  return totalDays - days.length;
+export const countRestDays = (days: DailyActivity[], start: Date, end: Date) =>
+  countDays(start, end) - days.length;
+
+/** Moyenne par semaine d'un total entre deux dates à minuit (ex. : 25 jours = 3,57 semaines) */
+export const averagePerWeek = (total: number, start: Date, end: Date) => {
+  const weeks = countDays(start, end) / 7;
+  return total / weeks;
 };
