@@ -1,12 +1,21 @@
-// Hook générique : charge des données protégées, suit le chargement et l'erreur
-
 import { useEffect, useState } from "react";
 import { useSession } from "~/contexts/session";
 
-// load reçoit le token et doit rester la même entre deux affichages
+/** Résultat d'un chargement, avec la fonction qui l'a produit */
+type Result<T> = {
+  load: (token: string) => Promise<T>;
+  data?: T;
+  error?: Error;
+};
+
+/**
+ * Hook générique : charge des données protégées, suit le chargement et l'erreur.
+ * `load` reçoit le token et doit rester la même tant que la demande ne change pas.
+ * Quand `load` change, les anciennes données restent disponibles jusqu'à l'arrivée des nouvelles.
+ */
 export const useData = <T>(load: (token: string) => Promise<T>) => {
   const { token, signOut } = useSession();
-  const [result, setResult] = useState<{ data?: T; error?: Error }>({});
+  const [result, setResult] = useState<Result<T>>();
 
   useEffect(() => {
     // Sécurité : aucune requête sans token (les middlewares l'évitent déjà)
@@ -16,7 +25,7 @@ export const useData = <T>(load: (token: string) => Promise<T>) => {
 
     load(token)
       .then((data) => {
-        if (!ignore) setResult({ data });
+        if (!ignore) setResult({ load, data });
       })
       .catch((error) => {
         if (ignore) return;
@@ -27,7 +36,7 @@ export const useData = <T>(load: (token: string) => Promise<T>) => {
         ) {
           signOut(error.message);
         } else {
-          setResult({ error });
+          setResult({ load, error });
         }
       });
 
@@ -36,6 +45,11 @@ export const useData = <T>(load: (token: string) => Promise<T>) => {
     };
   }, [load, token, signOut]);
 
-  // Ni données ni erreur : chargement en cours
-  return { ...result, isLoading: !result.data && !result.error };
+  const isCurrent = result?.load === load;
+
+  return {
+    data: result?.data,
+    error: isCurrent ? result?.error : undefined,
+    isLoading: !isCurrent,
+  };
 };

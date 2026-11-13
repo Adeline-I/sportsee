@@ -6,15 +6,17 @@
 
   --color-*: initial;
   --color-white: #ffffff;
+  --color-black: #000000;
   --color-lavender: #f2f3ff;
   --color-gray: #111111;
+  --color-gray-10: #e7e7e7;
+  --color-red: #c4260a;
   --color-orange: #f4320b;
   --color-orange-30: #fcc1b6;
-  --color-red: #c4260a;
   --color-blue: #0b23f4;
   --color-blue-70: #5465f7;
+  --color-blue-50: #7987ff;
   --color-blue-30: #b6bdfc;
-  --color-gray-10: #e7e7e7;
 
   --text-*: initial;
   --text-h1: 3rem;
@@ -38,6 +40,7 @@
   --container-footer: 77.5rem;
 
   --shadow-card: 0 4px 84px -40px #9da7fb66;
+  --shadow-tooltip: 0 4px 54px -18px #9da7fb99;
 }
 
 body {

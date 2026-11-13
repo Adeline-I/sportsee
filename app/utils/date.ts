@@ -12,3 +12,19 @@ export const getWeek = (date: Date) => {
 
   return { start, end };
 };
+
+/** Liste de `count` semaines (lundi → dimanche) : la dernière contient `date` */
+export const getWeeks = (date: Date, count: number) =>
+  Array.from({ length: count }, (_, index) => {
+    const weeksBack = count - 1 - index;
+    const day = new Date(date);
+    day.setDate(date.getDate() - weeksBack * 7);
+    return getWeek(day);
+  });
+
+/** Aujourd'hui à minuit, pour compter des jours entiers */
+export const getToday = () => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return today;
+};
