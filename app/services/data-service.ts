@@ -6,7 +6,7 @@ import {
   sumActivity,
   sumCalories,
 } from "~/utils/activity";
-import { getWeek } from "~/utils/date";
+import { getToday, getWeek } from "~/utils/date";
 import * as apiSource from "./api-source";
 import * as mockSource from "./mock-source";
 import { normalizeActivity, normalizeUser } from "./normalize";
@@ -48,8 +48,7 @@ export const getProfile = async (token: string) => {
   const user = await getUserInfo(token);
 
   const start = user.profile.createdAt;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // minuit : on compte des jours entiers
+  const today = getToday();
 
   const days = await getUserActivity(token, toApiDate(start), toApiDate(today));
 
@@ -100,8 +99,7 @@ export const getWeeklyDistances = async (
     return { start, end, distance: sumActivity(daysOfWeek).distance };
   });
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // minuit : on compte des jours entiers
+  const today = getToday();
 
   // Jours réellement possibles : pas avant l'inscription, pas après aujourd'hui
   const from = createdAt > periodStart ? createdAt : periodStart;

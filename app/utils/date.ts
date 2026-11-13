@@ -21,3 +21,10 @@ export const getWeeks = (date: Date, count: number) =>
     day.setDate(date.getDate() - weeksBack * 7);
     return getWeek(day);
   });
+
+/** Aujourd'hui à minuit, pour compter des jours entiers */
+export const getToday = () => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return today;
+};
