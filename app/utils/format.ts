@@ -17,6 +17,14 @@ const shortDateFormat = new Intl.DateTimeFormat("fr-FR", {
 /** Date → "02/11/2026" */
 export const formatShortDate = (date: Date) => shortDateFormat.format(date);
 
+const dayMonthFormat = new Intl.DateTimeFormat("fr-FR", {
+  day: "2-digit",
+  month: "2-digit",
+});
+
+/** Date → "01/06" */
+export const formatDayMonth = (date: Date) => dayMonthFormat.format(date);
+
 const periodFormat = new Intl.DateTimeFormat("fr-FR", {
   day: "numeric",
   month: "short",
