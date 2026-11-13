@@ -2,7 +2,8 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import ChartCard from "~/components/ChartCard";
 import ErrorMessage from "~/components/ErrorMessage";
 import Loader from "~/components/Loader";
-import { useWeeklyDistances } from "~/hooks/use-user-data";
+import PeriodNav from "~/components/PeriodNav";
+import { useWeeklyDistances } from "~/hooks/use-weekly-distances";
 import { formatNumber, formatPeriod } from "~/utils/format";
 
 type WeeklyDistanceChartProps = {
@@ -17,9 +18,18 @@ const AXIS_LINE = { stroke: "var(--color-gray)", strokeOpacity: 0.6 };
 
 /** Graphique km : distance de chaque semaine sur 4 semaines glissantes, et moyenne par semaine */
 const WeeklyDistanceChart = ({ createdAt }: WeeklyDistanceChartProps) => {
-  const { data, error, isLoading } = useWeeklyDistances(0, createdAt);
+  const {
+    data,
+    error,
+    isLoading,
+    weeks,
+    hasPrevious,
+    hasNext,
+    showPrevious,
+    showNext,
+  } = useWeeklyDistances(createdAt);
 
-  const weeks = data?.weeks.map((week, index) => ({
+  const bars = data?.weeks.map((week, index) => ({
     ...week,
     label: `S${index + 1}`,
   }));
@@ -32,22 +42,27 @@ const WeeklyDistanceChart = ({ createdAt }: WeeklyDistanceChartProps) => {
       color="blue"
       subtitle="Total des kilomètres par semaine, sur 4 semaines glissantes"
       period={
-        weeks && (
-          <p className="text-body-sm">
-            {formatPeriod(weeks[0].start, weeks[weeks.length - 1].end)}
-          </p>
-        )
+        <PeriodNav
+          label={formatPeriod(weeks[0].start, weeks[weeks.length - 1].end)}
+          hasPrevious={hasPrevious}
+          hasNext={hasNext}
+          onPrevious={showPrevious}
+          onNext={showNext}
+        />
       }
     >
       {isLoading && !data && <Loader />}
       {error && <ErrorMessage message={error.message} />}
 
-      {weeks && (
-        <div className="flex h-full flex-col gap-2">
+      {bars && (
+        <div
+          aria-busy={isLoading}
+          className={`flex h-full flex-col gap-2 ${isLoading ? "opacity-50 transition-opacity delay-200 duration-200 ease-linear" : ""}`}
+        >
           <BarChart
             responsive
             style={{ width: "100%", flex: 1, minHeight: 0 }}
-            data={weeks}
+            data={bars}
             margin={{ top: 5, right: 0, bottom: 0, left: 0 }}
           >
             <CartesianGrid

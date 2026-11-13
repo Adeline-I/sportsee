@@ -7,9 +7,7 @@ import {
   getProfile,
   getUserActivity,
   getUserInfo,
-  getWeeklyDistances,
 } from "~/services/data-service";
-import { getWeeks } from "~/utils/date";
 import { useData } from "./use-data";
 
 // Profil et statistiques
@@ -29,26 +27,3 @@ export const useProfile = () => useData(getProfile);
 
 // Dashboard : profil, statistiques et totaux de la semaine en cours
 export const useDashboard = () => useData(getDashboard);
-
-/** Nombre de semaines affichées par le graphique km */
-const WEEKS_COUNT = 4;
-
-/**
- * Graphique km : distances et moyenne de 4 semaines.
- * `offset` décale la période en semaines : 0 = jusqu'à la semaine en cours, -1 = une semaine plus tôt
- */
-export const useWeeklyDistances = (offset: number, createdAt: Date) => {
-  const load = useCallback(
-    (token: string) => {
-      const lastDay = new Date();
-      lastDay.setDate(lastDay.getDate() + offset * 7);
-      return getWeeklyDistances(
-        token,
-        getWeeks(lastDay, WEEKS_COUNT),
-        createdAt,
-      );
-    },
-    [offset, createdAt],
-  );
-  return useData(load);
-};
