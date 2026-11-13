@@ -10,7 +10,7 @@ type Result<T> = {
 
 /**
  * Hook générique : charge des données protégées, suit le chargement et l'erreur.
- * `load` reçoit le token et doit rester la même entre deux affichages si les données sont identiques.
+ * `load` reçoit le token et doit rester la même tant que la demande ne change pas.
  * Quand `load` change, les anciennes données restent disponibles jusqu'à l'arrivée des nouvelles.
  */
 export const useData = <T>(load: (token: string) => Promise<T>) => {
@@ -45,9 +45,11 @@ export const useData = <T>(load: (token: string) => Promise<T>) => {
     };
   }, [load, token, signOut]);
 
+  const isCurrent = result?.load === load;
+
   return {
     data: result?.data,
-    error: result?.error,
-    isLoading: result?.load !== load,
+    error: isCurrent ? result?.error : undefined,
+    isLoading: !isCurrent,
   };
 };
