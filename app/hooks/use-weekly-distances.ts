@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { getWeeklyDistances } from "~/services/data-service";
+import { getWeeklyDistances } from "~/services/dashboard-service";
 import { getWeeks, shiftDate } from "~/utils/date";
 import { useData } from "./use-data";
 
