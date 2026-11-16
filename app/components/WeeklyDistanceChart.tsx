@@ -11,6 +11,7 @@ import ChartCard from "~/components/ChartCard";
 import ErrorMessage from "~/components/ErrorMessage";
 import Loader from "~/components/Loader";
 import PeriodNav from "~/components/PeriodNav";
+import { BAR, GRID, X_AXIS, Y_AXIS } from "~/constants/charts";
 import { useWeeklyDistances } from "~/hooks/use-weekly-distances";
 import { formatDayMonth, formatNumber, formatPeriod } from "~/utils/format";
 
@@ -23,12 +24,6 @@ type WeekBar = {
   end: Date;
   distance: number;
 };
-
-/** Textes des axes : gris à 60 % (#707070) */
-const AXIS_TEXT = { fill: "var(--color-gray)", fillOpacity: 0.6 };
-
-/** Lignes des axes : gris à 60 % */
-const AXIS_LINE = { stroke: "var(--color-gray)", strokeOpacity: 0.6 };
 
 /** Au survol ou au focus du graphique : toutes les barres passent en bleu foncé */
 const BARS_HOVER =
@@ -103,43 +98,16 @@ const WeeklyDistanceChart = ({ createdAt }: WeeklyDistanceChartProps) => {
             data={bars}
             margin={{ top: 5, right: 0, bottom: 0, left: 0 }}
           >
-            <CartesianGrid
-              vertical={false}
-              stroke="var(--color-gray)"
-              strokeOpacity={0.06}
-              strokeDasharray="2 2"
-            />
-            <XAxis
-              dataKey="label"
-              tickLine={false}
-              tickSize={0}
-              tickMargin={25}
-              height={40}
-              axisLine={AXIS_LINE}
-              tick={{ ...AXIS_TEXT, fontSize: 12 }}
-            />
-            <YAxis
-              width="auto"
-              tickCount={4}
-              allowDecimals={false}
-              tickLine={false}
-              tickSize={0}
-              tickMargin={9}
-              axisLine={AXIS_LINE}
-              tick={{ ...AXIS_TEXT, fontSize: 10 }}
-            />
+            <CartesianGrid {...GRID} />
+            <XAxis {...X_AXIS} dataKey="label" />
+            <YAxis {...Y_AXIS} />
             <Tooltip
               content={DistanceTooltip}
               cursor={false}
               offset={{ x: 0, y: 10 }}
               allowEscapeViewBox={{ x: true, y: false }}
             />
-            <Bar
-              dataKey="distance"
-              fill="var(--color-blue-30)"
-              barSize={14}
-              radius={30}
-            />
+            <Bar {...BAR} dataKey="distance" fill="var(--color-blue-30)" />
           </BarChart>
           <p className="flex items-center gap-[3.5px] text-body-sm text-gray/60">
             <span
