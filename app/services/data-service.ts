@@ -1,12 +1,13 @@
 // Point d'entrée des données pour l'application : choisit la source (mock ou API), puis standardise les données
 
 import {
+  averageHeartRate,
   averagePerWeek,
   countRestDays,
   sumActivity,
   sumCalories,
 } from "~/utils/activity";
-import { getToday, getWeek } from "~/utils/date";
+import { getToday, getWeek, getWeekDays } from "~/utils/date";
 import * as apiSource from "./api-source";
 import * as mockSource from "./mock-source";
 import { normalizeActivity, normalizeUser } from "./normalize";
@@ -109,4 +110,29 @@ export const getWeeklyDistances = async (
     weeks: distances,
     average: averagePerWeek(sumActivity(days).distance, from, to),
   };
+};
+
+/**
+ * Graphique BPM : min, max et moyenne de chaque jour du lundi au dimanche (null si pas de séance).
+ * Moyenne de la semaine pondérée par la durée (null si aucune séance).
+ */
+export const getWeeklyHeartRate = async (
+  token: string,
+  { start, end }: { start: Date; end: Date },
+) => {
+  const days = await getUserActivity(token, toApiDate(start), toApiDate(end));
+
+  const heartRates = getWeekDays(start).map((date) => {
+    // getTime() : deux Date ne sont jamais égales avec ===, leurs millisecondes si
+    const activity = days.find((day) => day.date.getTime() === date.getTime());
+
+    return {
+      date,
+      min: activity?.heartRate.min ?? null,
+      max: activity?.heartRate.max ?? null,
+      average: activity?.heartRate.average ?? null,
+    };
+  });
+
+  return { days: heartRates, average: averageHeartRate(days) };
 };
