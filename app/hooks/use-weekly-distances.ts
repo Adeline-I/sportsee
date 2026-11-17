@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
-import { getWeeklyDistances } from "~/services/data-service";
-import { getWeeks } from "~/utils/date";
+import { getWeeklyDistances } from "~/services/dashboard-service";
+import { getWeeks, shiftDate } from "~/utils/date";
 import { useData } from "./use-data";
 
 /** Nombre de semaines affichées par le graphique km */
@@ -14,11 +14,10 @@ export const useWeeklyDistances = (createdAt: Date) => {
   // Décalage en semaines : 0 = période actuelle, -1 = une semaine plus tôt…
   const [offset, setOffset] = useState(0);
 
-  const weeks = useMemo(() => {
-    const lastDay = new Date();
-    lastDay.setDate(lastDay.getDate() + offset * 7);
-    return getWeeks(lastDay, WEEKS_COUNT);
-  }, [offset]);
+  const weeks = useMemo(
+    () => getWeeks(shiftDate(new Date(), offset * 7), WEEKS_COUNT),
+    [offset],
+  );
 
   const load = useCallback(
     (token: string) => getWeeklyDistances(token, weeks, createdAt),

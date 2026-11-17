@@ -1,4 +1,5 @@
 import WeeklyDistanceChart from "~/components/WeeklyDistanceChart";
+import WeeklyHeartRateChart from "~/components/WeeklyHeartRateChart";
 
 type LatestPerformancesProps = {
   createdAt: Date;
@@ -10,6 +11,7 @@ const LatestPerformances = ({ createdAt }: LatestPerformancesProps) => (
     <h2 className="text-h4">Vos dernières performances</h2>
     <div className="grid items-start gap-6 lg:grid-cols-[445fr_583fr]">
       <WeeklyDistanceChart createdAt={createdAt} />
+      <WeeklyHeartRateChart createdAt={createdAt} />
     </div>
   </section>
 );

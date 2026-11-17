@@ -1,13 +1,10 @@
-// Hooks des données de l'utilisateur : les composants les utilisent au lieu d'appeler data-service eux-mêmes
+// Hooks des données de l'utilisateur : les composants les utilisent au lieu d'appeler les services eux-mêmes
 // Le token est fourni par useData : les composants n'ont pas à s'en occuper
 
 import { useCallback } from "react";
-import {
-  getDashboard,
-  getProfile,
-  getUserActivity,
-  getUserInfo,
-} from "~/services/data-service";
+import { getDashboard } from "~/services/dashboard-service";
+import { getUserActivity, getUserInfo } from "~/services/data-service";
+import { getProfile } from "~/services/profile-service";
 import { useData } from "./use-data";
 
 // Profil et statistiques

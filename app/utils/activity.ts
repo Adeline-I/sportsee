@@ -34,3 +34,18 @@ export const averagePerWeek = (total: number, start: Date, end: Date) => {
   const weeks = countDays(start, end) / 7;
   return total / weeks;
 };
+
+/**
+ * Fréquence cardiaque moyenne, pondérée par la durée : chaque minute de course compte autant.
+ * Renvoie null s'il n'y a aucune séance (pas de moyenne possible).
+ */
+export const averageHeartRate = (days: DailyActivity[]) => {
+  const { duration } = sumActivity(days);
+  if (duration === 0) return null;
+
+  const weightedTotal = days.reduce(
+    (total, day) => total + day.heartRate.average * day.duration,
+    0,
+  );
+  return weightedTotal / duration;
+};
