@@ -15,7 +15,7 @@ const UserIdentity = ({ profile, className }: UserIdentityProps) => (
         alt=""
         width={104}
         height={117}
-        className="h-29.25 w-26 object-cover transition-transform duration-300 ease-out hover:scale-110 motion-reduce:transition-none"
+        className="h-29.25 w-26 object-cover transition-transform duration-300 ease-out motion-safe:hover:scale-110"
       />
     </div>
     <div>
