@@ -1,19 +1,18 @@
-// Hook de connexion : envoie les identifiants, puis confie le token à la session
-
 import { useState } from "react";
 import { useSession } from "~/contexts/session";
-import { login as sendLogin } from "~/services/data-service";
+import { login } from "~/services/data-service";
 
+/** Connexion : envoie les identifiants, puis confie le token à la session */
 export const useLogin = () => {
   const { signIn } = useSession();
   const [error, setError] = useState<Error>();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const login = async (username: string, password: string) => {
+  const submitLogin = async (username: string, password: string) => {
     setError(undefined); // efface l'erreur de l'essai précédent
     setIsSubmitting(true);
     try {
-      const { token } = await sendLogin(username, password);
+      const { token } = await login(username, password);
       signIn(token); // cookie, contexte, puis dashboard
     } catch (error) {
       setError(error as Error); // les services ne lancent que des Error
@@ -22,5 +21,5 @@ export const useLogin = () => {
     }
   };
 
-  return { login, error, isSubmitting };
+  return { submitLogin, error, isSubmitting };
 };

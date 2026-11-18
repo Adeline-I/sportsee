@@ -12,18 +12,18 @@ export const meta: Route.MetaFunction = () => [
   { title: "Connexion – SportSee" },
 ];
 
-// Déjà connecté : pas besoin du formulaire, direction le dashboard
+/** Déjà connecté : direction le dashboard, sans afficher le formulaire */
 export const clientMiddleware: Route.ClientMiddlewareFunction[] = [
   () => {
     if (getToken()) throw redirect("/dashboard");
   },
 ];
 
-const fieldClass =
+const FIELD_CLASS =
   "rounded-[10px] border-[0.5px] border-gray/60 bg-white p-5 text-body transition-colors duration-300 ease-in focus:border-blue focus:outline-hidden disabled:bg-gray-10 disabled:text-gray/60 motion-reduce:transition-none";
 
 const Login = () => {
-  const { login, error, isSubmitting } = useLogin();
+  const { submitLogin, error, isSubmitting } = useLogin();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -43,7 +43,10 @@ const Login = () => {
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    login(String(formData.get("username")), String(formData.get("password")));
+    submitLogin(
+      String(formData.get("username")),
+      String(formData.get("password")),
+    );
   };
 
   return (
@@ -71,7 +74,7 @@ const Login = () => {
                   type="text"
                   required
                   autoComplete="username"
-                  className={fieldClass}
+                  className={FIELD_CLASS}
                 />
               </div>
               <div className="flex flex-col gap-2">
@@ -84,7 +87,7 @@ const Login = () => {
                   type="password"
                   required
                   autoComplete="current-password"
-                  className={fieldClass}
+                  className={FIELD_CLASS}
                 />
               </div>
               {message && <ErrorMessage message={message} />}
