@@ -20,7 +20,7 @@ export const clientMiddleware: Route.ClientMiddlewareFunction[] = [
 ];
 
 const fieldClass =
-  "rounded-[10px] border-[0.5px] border-gray/60 bg-white p-5 text-body focus:border-blue focus:outline-hidden disabled:bg-gray-10 disabled:text-gray/60";
+  "rounded-[10px] border-[0.5px] border-gray/60 bg-white p-5 text-body transition-colors duration-300 ease-in focus:border-blue focus:outline-hidden disabled:bg-gray-10 disabled:text-gray/60 motion-reduce:transition-none";
 
 const Login = () => {
   const { login, error, isSubmitting } = useLogin();

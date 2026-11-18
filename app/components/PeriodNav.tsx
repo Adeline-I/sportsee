@@ -17,7 +17,7 @@ type ArrowButtonProps = {
 };
 
 const arrowClass =
-  "flex size-6 cursor-pointer items-center justify-center rounded-[10px] border border-gray/60 bg-white text-gray hover:border-blue hover:bg-blue-70 hover:text-white focus-visible:border-blue focus-visible:bg-blue-70 focus-visible:text-white aria-disabled:cursor-default aria-disabled:border-gray/60 aria-disabled:bg-gray-10 aria-disabled:text-gray/60";
+  "flex size-6 cursor-pointer items-center justify-center rounded-[10px] border border-gray/60 bg-white text-gray transition-colors duration-300 ease-in hover:border-blue hover:bg-blue-70 hover:text-white focus-visible:border-blue focus-visible:bg-blue-70 focus-visible:text-white aria-disabled:cursor-default aria-disabled:border-gray/60 aria-disabled:bg-gray-10 aria-disabled:text-gray/60 motion-reduce:transition-none";
 
 const ArrowButton = ({
   label,
