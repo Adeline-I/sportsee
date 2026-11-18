@@ -3,7 +3,7 @@ import Loader from "~/components/Loader";
 import ProfileDetails from "~/components/ProfileDetails";
 import ProfileStatistics from "~/components/ProfileStatistics";
 import UserIdentity from "~/components/UserIdentity";
-import { useProfile } from "~/hooks/use-user-data";
+import { useProfile } from "~/hooks/use-profile";
 import type { Route } from "./+types/profile";
 
 export const meta: Route.MetaFunction = () => [

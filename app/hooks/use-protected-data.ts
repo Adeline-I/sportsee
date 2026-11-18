@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "~/contexts/session";
 
-/** Résultat d'un chargement, avec la fonction qui l'a produit */
+/** Résultat d'un chargement, avec la fonction `load` qui l'a produit */
 type Result<T> = {
   load: (token: string) => Promise<T>;
   data?: T;
@@ -9,11 +9,10 @@ type Result<T> = {
 };
 
 /**
- * Hook générique : charge des données protégées, suit le chargement et l'erreur.
- * `load` reçoit le token et doit rester la même tant que la demande ne change pas.
- * Quand `load` change, les anciennes données restent disponibles jusqu'à l'arrivée des nouvelles.
+ * Charge des données qui demandent le token, et suit le chargement et l'erreur.
+ * @param load reçoit le token ; doit rester la même fonction tant que la demande ne change pas (useCallback)
  */
-export const useData = <T>(load: (token: string) => Promise<T>) => {
+export const useProtectedData = <T>(load: (token: string) => Promise<T>) => {
   const { token, signOut } = useSession();
   const [result, setResult] = useState<Result<T>>();
 
@@ -48,6 +47,7 @@ export const useData = <T>(load: (token: string) => Promise<T>) => {
   const isCurrent = result?.load === load;
 
   return {
+    // Les anciennes données restent disponibles jusqu'à l'arrivée des nouvelles
     data: result?.data,
     error: isCurrent ? result?.error : undefined,
     isLoading: !isCurrent,

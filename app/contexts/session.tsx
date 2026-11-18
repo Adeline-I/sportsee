@@ -37,7 +37,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     [navigate],
   );
 
-  // useCallback : signOut est utilisée dans l'effet de useData, elle doit rester la même fonction pour ne pas relancer le chargement
+  // useCallback : signOut est utilisée dans l'effet de useProtectedData, elle doit rester la même fonction pour ne pas relancer le chargement
   const signOut = useCallback(
     (message?: string) => {
       removeToken();

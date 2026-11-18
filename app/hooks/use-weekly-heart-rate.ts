@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { getWeeklyHeartRate } from "~/services/dashboard-service";
 import { getWeek, shiftDate } from "~/utils/date";
-import { useData } from "./use-data";
+import { useProtectedData } from "./use-protected-data";
 
 /**
  * Graphique BPM : fréquence cardiaque d'une semaine, avec la navigation d'une semaine à l'autre.
@@ -20,7 +20,7 @@ export const useWeeklyHeartRate = (createdAt: Date) => {
     (token: string) => getWeeklyHeartRate(token, week),
     [week],
   );
-  const result = useData(load);
+  const result = useProtectedData(load);
 
   // Limites : pas avant la semaine d'inscription, pas après la semaine en cours
   const hasPrevious = week.start > createdAt;

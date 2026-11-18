@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { getWeeklyDistances } from "~/services/dashboard-service";
 import { getWeeks, shiftDate } from "~/utils/date";
-import { useData } from "./use-data";
+import { useProtectedData } from "./use-protected-data";
 
 /** Nombre de semaines affichées par le graphique km */
 const WEEKS_COUNT = 4;
@@ -23,7 +23,7 @@ export const useWeeklyDistances = (createdAt: Date) => {
     (token: string) => getWeeklyDistances(token, weeks, createdAt),
     [weeks, createdAt],
   );
-  const result = useData(load);
+  const result = useProtectedData(load);
 
   // Limites : pas avant la semaine d'inscription, pas après la semaine en cours
   const hasPrevious = weeks[0].start > createdAt;

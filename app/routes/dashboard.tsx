@@ -4,7 +4,7 @@ import LatestPerformances from "~/components/LatestPerformances";
 import Loader from "~/components/Loader";
 import TotalDistance from "~/components/TotalDistance";
 import UserIdentity from "~/components/UserIdentity";
-import { useDashboard } from "~/hooks/use-user-data";
+import { useDashboard } from "~/hooks/use-dashboard";
 import type { Route } from "./+types/dashboard";
 
 export const meta: Route.MetaFunction = () => [
