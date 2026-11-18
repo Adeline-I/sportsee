@@ -1,12 +1,10 @@
-// Fetch :  requêtes au backend.
-
-// Adresse du backend, lue dans le fichier .env (ex. "http://localhost:8000")
+/** Adresse du backend, lue dans le .env (ex. "http://localhost:8000") */
 const API_URL = import.meta.env.VITE_API_URL;
 
-// Envoie une requête au backend et renvoie sa réponse.
-// - path : la route appelée, ex. "/api/user-info"
-// - token : à donner pour les routes protégées
-// - body : les données à envoyer (seulement pour la connexion)
+/**
+ * Envoie une requête au backend et renvoie sa réponse ; en cas d'échec, lance une Error avec le code HTTP dans `cause` (0 si le serveur est injoignable).
+ * @param body données à envoyer : la requête devient un POST
+ */
 export const request = async (path: string, token?: string, body?: object) => {
   // 1. Préparer les en-têtes
   const headers: Record<string, string> = {

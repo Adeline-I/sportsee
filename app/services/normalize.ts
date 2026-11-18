@@ -1,15 +1,13 @@
-// Standardisation : transforme les données brutes de l'API en données prêtes à l'emploi pour les composants
-
 import type { DailyActivity, User } from "../types";
 import type { ApiSession, ApiUserInfo } from "./api-types";
 
-// "2025-01-04" → 4 janvier 2025 à minuit, heure française
+/** "2025-01-04" → 4 janvier 2025 à minuit, heure locale */
 const toLocalDate = (text: string) => new Date(`${text}T00:00`);
 
 /** L'API ne renvoie pas encore l'objectif hebdomadaire : valeur de la maquette en attendant */
 const DEFAULT_WEEKLY_GOAL = 6;
 
-// Profil : on garde tout, sauf la date d'inscription (texte → date) et la distance totale (texte → nombre)
+/** Profil : date d'inscription en Date, distance totale en nombre, objectif par défaut */
 export const normalizeUser = ({ profile, statistics }: ApiUserInfo): User => ({
   profile: { ...profile, createdAt: toLocalDate(profile.createdAt) },
   statistics: {
@@ -19,7 +17,7 @@ export const normalizeUser = ({ profile, statistics }: ApiUserInfo): User => ({
   weeklyGoal: DEFAULT_WEEKLY_GOAL,
 });
 
-// Activité : une entrée par jour, même si le jour compte plusieurs séances (les séances arrivent triées par date)
+/** Activité : une entrée par jour, même si le jour compte plusieurs séances (reçues triées par date) */
 export const normalizeActivity = (sessions: ApiSession[]): DailyActivity[] => {
   const days: DailyActivity[] = [];
 

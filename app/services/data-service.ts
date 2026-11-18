@@ -1,29 +1,29 @@
-// Point d'entrée des données pour l'application : choisit la source (mock ou API), puis standardise les données
-
 import * as apiSource from "./api-source";
 import * as mockSource from "./mock-source";
 import { normalizeActivity, normalizeUser } from "./normalize";
 
-const dataSource = import.meta.env.VITE_DATA_SOURCE;
+/** Source des données choisie dans le .env : "api" ou "mock" */
+const DATA_SOURCE = import.meta.env.VITE_DATA_SOURCE;
 
-// Fichier .env absent ou mal rempli
-if (dataSource !== "api" && dataSource !== "mock") {
+if (DATA_SOURCE !== "api" && DATA_SOURCE !== "mock") {
   throw new Error(
     'VITE_DATA_SOURCE doit valoir "api" ou "mock" : vérifiez le fichier .env',
   );
 }
 
-const source = dataSource === "mock" ? mockSource : apiSource;
+/** Les deux sources ont les mêmes fonctions : le reste de l'application ne voit pas la différence */
+const source = DATA_SOURCE === "mock" ? mockSource : apiSource;
 
-// La réponse de connexion est déjà utilisable : rien à standardiser
-export const login = (username: string, password: string) =>
-  source.login(username, password);
+/** Connexion : la réponse est déjà utilisable, rien à standardiser */
+export const login = source.login;
 
+/** Profil et statistiques, standardisés */
 export const getUserInfo = async (token: string) =>
   normalizeUser(await source.getUserInfo(token));
 
+/** Activité entre deux dates "AAAA-MM-JJ", standardisée : une entrée par jour */
 export const getUserActivity = async (
   token: string,
-  startWeek: string,
-  endWeek: string,
-) => normalizeActivity(await source.getUserActivity(token, startWeek, endWeek));
+  startDate: string,
+  endDate: string,
+) => normalizeActivity(await source.getUserActivity(token, startDate, endDate));
