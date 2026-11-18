@@ -30,11 +30,9 @@ export const getWeeks = (date: Date, count: number) =>
     return getWeek(shiftDate(date, -weeksBack * 7));
   });
 
-/** Les 7 jours (lundi → dimanche, à minuit) de la semaine qui contient `date` */
-export const getWeekDays = (date: Date) => {
-  const { start } = getWeek(date);
-  return Array.from({ length: 7 }, (_, index) => shiftDate(start, index));
-};
+/** Les 7 jours d'une semaine, à partir de son lundi `start` */
+export const getWeekDays = (start: Date) =>
+  Array.from({ length: 7 }, (_, index) => shiftDate(start, index));
 
 /** Aujourd'hui à minuit, pour compter des jours entiers */
 export const getToday = () => startOfDay(new Date());

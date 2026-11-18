@@ -1,9 +1,10 @@
-import { countRestDays, sumCalories } from "~/utils/activity";
+import { countRestDays, sumActivity } from "~/utils/activity";
 import { getToday, toApiDate } from "~/utils/date";
 import { getUserActivity, getUserInfo } from "./data-service";
 
-// Page profil : le profil, puis l'activité de l'inscription à aujourd'hui, puis les calculs
+/** Page profil : profil, calories et jours de repos depuis l'inscription */
 export const getProfile = async (token: string) => {
+  // Le profil d'abord : sa date d'inscription sert à demander l'activité
   const user = await getUserInfo(token);
 
   const start = user.profile.createdAt;
@@ -13,7 +14,7 @@ export const getProfile = async (token: string) => {
 
   return {
     user,
-    caloriesBurned: sumCalories(days),
+    caloriesBurned: sumActivity(days).caloriesBurned,
     restDays: countRestDays(days, start, today),
   };
 };
