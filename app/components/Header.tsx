@@ -3,7 +3,7 @@ import Logo from "~/components/Logo";
 import { useSession } from "~/contexts/session";
 
 const linkClass =
-  "hover:text-blue focus-visible:text-blue aria-[current=page]:text-blue";
+  "transition-colors duration-300 ease-[cubic-bezier(0.7,-0.4,0.4,1.4)] hover:text-blue focus-visible:text-blue aria-[current=page]:text-blue motion-reduce:transition-none";
 
 const Header = () => {
   const { signOut } = useSession();

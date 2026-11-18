@@ -8,13 +8,16 @@ type UserIdentityProps = {
 
 const UserIdentity = ({ profile, className }: UserIdentityProps) => (
   <div className={`flex items-center ${className}`}>
-    <img
-      src={profile.profilePicture}
-      alt=""
-      width={104}
-      height={117}
-      className="h-29.25 w-26 shrink-0 rounded-[10px] object-cover shadow-card"
-    />
+    {/* Cadre fixe : au survol, la photo grossit à l'intérieur sans le dépasser */}
+    <div className="shrink-0 overflow-hidden rounded-[10px] shadow-card">
+      <img
+        src={profile.profilePicture}
+        alt=""
+        width={104}
+        height={117}
+        className="h-29.25 w-26 object-cover transition-transform duration-300 ease-out motion-safe:hover:scale-110"
+      />
+    </div>
     <div>
       <p className="text-h4">
         {profile.firstName} {profile.lastName}
