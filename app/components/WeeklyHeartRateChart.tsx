@@ -94,7 +94,7 @@ const WeeklyHeartRateChart = ({ createdAt }: WeeklyHeartRateChartProps) => {
     showNext,
   } = useWeeklyHeartRate(createdAt);
 
-  const days = data?.days.map((day, index) => ({
+  const days = data?.heartRates.map((day, index) => ({
     ...day,
     label: DAYS[index].label,
   }));

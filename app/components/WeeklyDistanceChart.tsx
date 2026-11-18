@@ -13,17 +13,14 @@ import Loader from "~/components/Loader";
 import PeriodNav from "~/components/PeriodNav";
 import { BAR, GRID, X_AXIS, Y_AXIS } from "~/constants/charts";
 import { useWeeklyDistances } from "~/hooks/use-weekly-distances";
+import type { Week } from "~/types";
 import { formatDayMonth, formatNumber, formatPeriod } from "~/utils/format";
 
 type WeeklyDistanceChartProps = {
   createdAt: Date;
 };
 
-type WeekBar = {
-  start: Date;
-  end: Date;
-  distance: number;
-};
+type WeekBar = Week & { distance: number };
 
 /** Au survol ou au focus du graphique : toutes les barres passent en bleu foncé */
 const BARS_HOVER =
@@ -60,7 +57,7 @@ const WeeklyDistanceChart = ({ createdAt }: WeeklyDistanceChartProps) => {
     showNext,
   } = useWeeklyDistances(createdAt);
 
-  const bars = data?.weeks.map((week, index) => ({
+  const bars = data?.distances.map((week, index) => ({
     ...week,
     label: `S${index + 1}`,
   }));

@@ -1,3 +1,5 @@
+import type { Week } from "~/types";
+
 /** Copie de `date` décalée de `days` jours (négatif = vers le passé) */
 export const shiftDate = (date: Date, days: number) => {
   const shiftedDate = new Date(date);
@@ -13,7 +15,7 @@ const startOfDay = (date: Date) => {
 };
 
 /** Semaine d'une date : du lundi au dimanche, à minuit */
-export const getWeek = (date: Date) => {
+export const getWeek = (date: Date): Week => {
   const day = startOfDay(date);
   // getDay() : dimanche = 0, lundi = 1… ; (jour + 6) % 7 = nombre de jours depuis lundi
   const start = shiftDate(day, -((day.getDay() + 6) % 7));

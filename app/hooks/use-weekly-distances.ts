@@ -1,23 +1,15 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback } from "react";
 import { getWeeklyDistances } from "~/services/dashboard-service";
-import { getWeeks, shiftDate } from "~/utils/date";
 import { useProtectedData } from "./use-protected-data";
+import { useWeekNavigation } from "./use-week-navigation";
 
 /** Nombre de semaines affichées par le graphique km */
 const WEEKS_COUNT = 4;
 
-/**
- * Graphique km : distances et moyenne de 4 semaines, avec la navigation entre les périodes.
- * Au départ, la dernière semaine est la semaine en cours ; chaque pas décale d'une semaine.
- */
+/** Graphique km : distances et moyenne des 4 semaines affichées, avec la navigation entre les périodes */
 export const useWeeklyDistances = (createdAt: Date) => {
-  // Décalage en semaines : 0 = période actuelle, -1 = une semaine plus tôt…
-  const [offset, setOffset] = useState(0);
-
-  const weeks = useMemo(
-    () => getWeeks(shiftDate(new Date(), offset * 7), WEEKS_COUNT),
-    [offset],
-  );
+  const navigation = useWeekNavigation(createdAt, WEEKS_COUNT);
+  const { weeks } = navigation;
 
   const load = useCallback(
     (token: string) => getWeeklyDistances(token, weeks, createdAt),
@@ -25,16 +17,5 @@ export const useWeeklyDistances = (createdAt: Date) => {
   );
   const result = useProtectedData(load);
 
-  // Limites : pas avant la semaine d'inscription, pas après la semaine en cours
-  const hasPrevious = weeks[0].start > createdAt;
-  const hasNext = offset < 0;
-
-  const showPrevious = () => {
-    if (hasPrevious) setOffset((current) => current - 1);
-  };
-  const showNext = () => {
-    if (hasNext) setOffset((current) => current + 1);
-  };
-
-  return { ...result, weeks, hasPrevious, hasNext, showPrevious, showNext };
+  return { ...result, ...navigation };
 };

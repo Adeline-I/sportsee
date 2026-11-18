@@ -1,34 +1,48 @@
-// Données standardisées, utilisées par les composants
-
+/** Utilisateur standardisé : profil, statistiques et objectif */
 export type User = {
   profile: {
     firstName: string;
     lastName: string;
     createdAt: Date;
     age: number;
-    weight: number; // kg
-    height: number; // cm
-    profilePicture: string; // adresse de l'image
+    /** kg */
+    weight: number;
+    /** cm */
+    height: number;
+    /** Adresse de l'image */
+    profilePicture: string;
   };
   statistics: {
-    totalDistance: number; // km
+    /** km */
+    totalDistance: number;
     totalSessions: number;
-    totalDuration: number; // minutes
+    /** minutes */
+    totalDuration: number;
   };
   /** Nombre de courses visées par semaine */
   weeklyGoal: number;
 };
 
-// Activité d'une journée : toutes les séances du jour regroupées
+/** Activité d'une journée : toutes les séances du jour regroupées */
 export type DailyActivity = {
   date: Date;
-  sessions: number; // nombre de séances ce jour-là
-  distance: number; // km
-  duration: number; // minutes
+  /** Nombre de séances ce jour-là */
+  sessions: number;
+  /** km */
+  distance: number;
+  /** minutes */
+  duration: number;
   heartRate: {
     min: number;
     max: number;
-    average: number; // moyenne pondérée par la durée des séances
+    /** Moyenne pondérée par la durée des séances */
+    average: number;
   };
   caloriesBurned: number;
+};
+
+/** Semaine du lundi au dimanche, à minuit */
+export type Week = {
+  start: Date;
+  end: Date;
 };

@@ -1,3 +1,4 @@
+import type { Week } from "~/types";
 import {
   averageHeartRate,
   averagePerWeek,
@@ -6,7 +7,7 @@ import {
 import { getToday, getWeek, getWeekDays, toApiDate } from "~/utils/date";
 import { getUserActivity, getUserInfo } from "./data-service";
 
-// Dashboard : le profil et l'activité de la semaine en cours, puis les totaux de la semaine
+/** Dashboard : profil et totaux de la semaine en cours */
 export const getDashboard = async (token: string) => {
   const { start, end } = getWeek(new Date());
 
@@ -21,11 +22,11 @@ export const getDashboard = async (token: string) => {
 
 /**
  * Graphique km : distance de chaque semaine et moyenne par semaine.
- * La moyenne ne compte que les jours passés depuis l'inscription.
+ * La moyenne ne compte que les jours entre l'inscription et aujourd'hui.
  */
 export const getWeeklyDistances = async (
   token: string,
-  weeks: { start: Date; end: Date }[],
+  weeks: Week[],
   createdAt: Date,
 ) => {
   const periodStart = weeks[0].start;
@@ -38,7 +39,6 @@ export const getWeeklyDistances = async (
     toApiDate(periodEnd),
   );
 
-  // Pour chaque semaine : total des km des jours entre son lundi et son dimanche
   const distances = weeks.map(({ start, end }) => {
     const daysOfWeek = days.filter(
       (day) => day.date >= start && day.date <= end,
@@ -46,25 +46,24 @@ export const getWeeklyDistances = async (
     return { start, end, distance: sumActivity(daysOfWeek).distance };
   });
 
+  // Jours comptés dans la moyenne : pas avant l'inscription, pas après aujourd'hui
   const today = getToday();
-
-  // Jours réellement possibles : pas avant l'inscription, pas après aujourd'hui
   const from = createdAt > periodStart ? createdAt : periodStart;
   const to = today < periodEnd ? today : periodEnd;
 
   return {
-    weeks: distances,
+    distances,
     average: averagePerWeek(sumActivity(days).distance, from, to),
   };
 };
 
 /**
- * Graphique BPM : min, max et moyenne de chaque jour du lundi au dimanche (null si pas de séance).
+ * Graphique BPM : min, max et moyenne de chaque jour du lundi au dimanche (null sans séance).
  * Moyenne de la semaine pondérée par la durée (null si aucune séance).
  */
 export const getWeeklyHeartRate = async (
   token: string,
-  { start, end }: { start: Date; end: Date },
+  { start, end }: Week,
 ) => {
   const days = await getUserActivity(token, toApiDate(start), toApiDate(end));
 
@@ -80,5 +79,5 @@ export const getWeeklyHeartRate = async (
     };
   });
 
-  return { days: heartRates, average: averageHeartRate(days) };
+  return { heartRates, average: averageHeartRate(days) };
 };
