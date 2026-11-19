@@ -3,7 +3,8 @@ import { formatDate } from "~/utils/format";
 
 type UserIdentityProps = {
   profile: User["profile"];
-  className: string; // écart entre la photo et le texte : il change selon la page
+  /** Écart entre la photo et le texte : il change selon la page */
+  className: string;
 };
 
 const UserIdentity = ({ profile, className }: UserIdentityProps) => (

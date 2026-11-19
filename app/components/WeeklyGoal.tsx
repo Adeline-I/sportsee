@@ -2,8 +2,7 @@ import { Pie, PieChart, type PieLabelRenderProps } from "recharts";
 import { pluralize } from "~/utils/format";
 
 type WeeklyGoalProps = {
-  /** Courses réalisées cette semaine */
-  done: number;
+  sessions: number;
   goal: number;
 };
 
@@ -25,22 +24,14 @@ const SliceLabel = ({ color, text }: SliceLabelProps) => (
 const LABEL_WIDTH = 100;
 const LABEL_HEIGHT = 16;
 
-/**
- * Placement de la zone autour du repère, selon le côté du donut (textAnchor donné par Recharts).
- * - shift : part de la zone placée avant le repère
- * - justify : alignement de l'étiquette dans la zone
- */
+/** Placement de l'étiquette selon le côté du donut (textAnchor de Recharts) : décalage de la zone, puis alignement dedans */
 const LABEL_PLACEMENT = {
   start: { shift: 0, justify: "justify-start" },
   middle: { shift: 0.5, justify: "justify-center" },
   end: { shift: 1, justify: "justify-end" },
 };
 
-/**
- * Étiquette d'une part, appelée par Recharts pour chaque part.
- * Le HTML est placé dans un foreignObject, obligatoire pour afficher du HTML dans un SVG.
- * Rien n'est affiché pour une part vide.
- */
+/** Étiquette de chaque part, dans un foreignObject (seul moyen d'afficher du HTML dans un SVG) ; rien pour une part vide */
 const renderLabel = ({
   x,
   y,
@@ -68,13 +59,10 @@ const renderLabel = ({
   );
 };
 
-/**
- * Objectif hebdomadaire : courses réalisées et restantes, avec un donut.
- * Les restantes ne sont jamais négatives, même si l'objectif est dépassé.
- * Ses étiquettes peuvent déborder un peu du graphique, dans la marge de la carte (overflow-visible).
- */
-const WeeklyGoal = ({ done, goal }: WeeklyGoalProps) => {
-  const remaining = Math.max(goal - done, 0);
+/** Objectif hebdomadaire : donut des courses réalisées et restantes */
+const WeeklyGoal = ({ sessions, goal }: WeeklyGoalProps) => {
+  // Jamais négatif, même si l'objectif est dépassé
+  const remaining = Math.max(goal - sessions, 0);
 
   const data = [
     {
@@ -83,8 +71,8 @@ const WeeklyGoal = ({ done, goal }: WeeklyGoalProps) => {
       fill: "var(--color-blue-30)",
     },
     {
-      name: pluralize(done, "réalisée", "réalisées"),
-      value: done,
+      name: pluralize(sessions, "réalisée", "réalisées"),
+      value: sessions,
       fill: "var(--color-blue)",
     },
   ];
@@ -93,7 +81,7 @@ const WeeklyGoal = ({ done, goal }: WeeklyGoalProps) => {
     <div className="flex flex-col gap-12 rounded-[10px] bg-white px-9.5 pt-4 pb-8 shadow-card">
       <div className="flex flex-col gap-4 leading-tight">
         <p className="text-h3 text-blue">
-          x{done}{" "}
+          x{sessions}{" "}
           <span className="text-body-lg text-blue-30">
             sur objectif de {goal}
           </span>
@@ -102,10 +90,11 @@ const WeeklyGoal = ({ done, goal }: WeeklyGoalProps) => {
           Courses hebdomadaires réalisées
         </p>
       </div>
+      {/* overflow-visible : les étiquettes peuvent déborder du graphique, dans la marge de la carte */}
       <div
         className="[&_svg]:overflow-visible"
         role="img"
-        aria-label={`${done} ${pluralize(done, "course réalisée", "courses réalisées")}, ${remaining} ${pluralize(remaining, "restante", "restantes")}`}
+        aria-label={`${sessions} ${pluralize(sessions, "course réalisée", "courses réalisées")}, ${remaining} ${pluralize(remaining, "restante", "restantes")}`}
       >
         <PieChart
           responsive

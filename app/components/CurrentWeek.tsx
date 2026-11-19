@@ -27,7 +27,7 @@ const CurrentWeek = ({
       </p>
     </div>
     <div className="grid items-start gap-7.5 lg:grid-cols-[450fr_572fr]">
-      <WeeklyGoal done={sessions} goal={goal} />
+      <WeeklyGoal sessions={sessions} goal={goal} />
       <dl className="flex flex-col gap-4">
         <WeekStat
           label="Durée d'activité"
