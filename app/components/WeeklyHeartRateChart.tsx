@@ -7,8 +7,7 @@ import {
   YAxis,
 } from "recharts";
 import ChartCard from "~/components/ChartCard";
-import ErrorMessage from "~/components/ErrorMessage";
-import Loader from "~/components/Loader";
+import ChartLegend from "~/components/ChartLegend";
 import PeriodNav from "~/components/PeriodNav";
 import { BAR, GRID, X_AXIS, Y_AXIS } from "~/constants/charts";
 import { useWeeklyHeartRate } from "~/hooks/use-weekly-heart-rate";
@@ -38,6 +37,7 @@ const DAYS = [
 
 const HEART_RATE_TICKS = [110, 140, 170, 200];
 
+/** Titre de la carte : vide pendant le premier chargement */
 const getTitle = (average: number | null | undefined) => {
   if (average === undefined) return "";
   if (average === null) return "Aucune séance";
@@ -58,28 +58,22 @@ const describeWeek = (days: HeartRateDay[]) => {
 
 /** Au survol du graphique : la courbe passe en bleu */
 const LINE_HOVER =
-  "[&_.recharts-line-curve]:transition-[stroke] [&_.recharts-line-curve]:duration-300 [&_.recharts-line-curve]:ease-[cubic-bezier(0.45,1.45,0.8,1)] motion-reduce:[&_.recharts-line-curve]:transition-none hover:[&_.recharts-line-curve]:stroke-blue";
+  "[&_.recharts-line-curve]:transition-[stroke] [&_.recharts-line-curve]:duration-300 [&_.recharts-line-curve]:ease-spring motion-reduce:[&_.recharts-line-curve]:transition-none hover:[&_.recharts-line-curve]:stroke-blue";
 
-const HeartRateLegend = () => (
-  <ul className="flex gap-4 text-body-sm text-gray/60">
-    <li className="flex items-center gap-[3.5px]">
-      <span className="size-2 rounded-full bg-orange-30" aria-hidden="true" />
-      Min BPM
-    </li>
-    <li className="flex items-center gap-[3.5px]">
-      <span className="size-2 rounded-full bg-orange" aria-hidden="true" />
-      Max BPM
-    </li>
-    <li className="flex items-center gap-[3.5px]">
-      <span className="flex items-center gap-px" aria-hidden="true">
+const LEGEND = [
+  { label: "Min BPM", color: "bg-orange-30" },
+  { label: "Max BPM", color: "bg-orange" },
+  {
+    label: "Moyenne BPM",
+    symbol: (
+      <span className="flex items-center gap-px">
         <span className="h-px w-0.5 bg-blue-30" />
         <span className="size-1.25 rounded-full bg-blue" />
         <span className="h-px w-0.5 bg-blue-30" />
       </span>
-      Moyenne BPM
-    </li>
-  </ul>
-);
+    ),
+  },
+];
 
 /** Graphique BPM : min, max et moyenne de chaque jour de la semaine */
 const WeeklyHeartRateChart = ({ createdAt }: WeeklyHeartRateChartProps) => {
@@ -94,7 +88,7 @@ const WeeklyHeartRateChart = ({ createdAt }: WeeklyHeartRateChartProps) => {
     showNext,
   } = useWeeklyHeartRate(createdAt);
 
-  const days = data?.days.map((day, index) => ({
+  const days = data?.heartRates.map((day, index) => ({
     ...day,
     label: DAYS[index].label,
   }));
@@ -113,15 +107,11 @@ const WeeklyHeartRateChart = ({ createdAt }: WeeklyHeartRateChartProps) => {
           onNext={showNext}
         />
       }
+      isLoading={isLoading}
+      error={error}
     >
-      {isLoading && !data && <Loader />}
-      {error && <ErrorMessage message={error.message} />}
-
       {days && (
-        <div
-          aria-busy={isLoading}
-          className={`flex h-full flex-col gap-4 ${isLoading ? "opacity-50 transition-opacity delay-200 duration-200 ease-linear" : ""}`}
-        >
+        <div className="flex h-full flex-col gap-4">
           <ComposedChart
             responsive
             role="img"
@@ -153,7 +143,7 @@ const WeeklyHeartRateChart = ({ createdAt }: WeeklyHeartRateChartProps) => {
               activeDot={false}
             />
           </ComposedChart>
-          <HeartRateLegend />
+          <ChartLegend items={LEGEND} />
         </div>
       )}
     </ChartCard>

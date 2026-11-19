@@ -4,14 +4,14 @@ import Header from "~/components/Header";
 import { getToken } from "~/services/token";
 import type { Route } from "./+types/app-layout";
 
-// Avant d'afficher une page connectée : sans token, retour à la connexion
-// (le middleware tourne hors de React : il lit le cookie, pas le contexte)
+/** Sans token, retour à la connexion (le middleware tourne avant React : il lit le cookie, pas le contexte) */
 export const clientMiddleware: Route.ClientMiddlewareFunction[] = [
   () => {
     if (!getToken()) throw redirect("/");
   },
 ];
 
+/** Cadre des pages connectées : en-tête, page, pied de page */
 const AppLayout = () => (
   <div className="flex min-h-screen flex-col">
     <div className="flex-1 px-4 pt-8.75 pb-20 lg:px-8">

@@ -1,75 +1,57 @@
-import {
-  isRouteErrorResponse,
-  Links,
-  Meta,
-  Outlet,
-  Scripts,
-  ScrollRestoration,
-} from "react-router";
+import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import Loader from "~/components/Loader";
+import Logo from "~/components/Logo";
 import { SessionProvider } from "~/contexts/session";
 import type { Route } from "./+types/root";
 import "./app.css";
 
-export function Layout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="fr">
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <Meta />
-        <Links />
-      </head>
-      <body>
-        {children}
-        <ScrollRestoration />
-        <Scripts />
-      </body>
-    </html>
-  );
-}
+/** Squelette HTML de toutes les pages, écrans de chargement et d'erreur compris */
+export const Layout = ({ children }: { children: React.ReactNode }) => (
+  <html lang="fr">
+    <head>
+      <meta charSet="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <Meta />
+      <Links />
+    </head>
+    <body>
+      {children}
+      <ScrollRestoration />
+      <Scripts />
+    </body>
+  </html>
+);
 
-export function HydrateFallback() {
+/** Écran affiché pendant le démarrage de l'application */
+export const HydrateFallback = () => (
+  <main className="flex min-h-screen items-center justify-center">
+    <Loader />
+  </main>
+);
+
+/** Toutes les pages ont accès à la session */
+const App = () => (
+  <SessionProvider>
+    <Outlet />
+  </SessionProvider>
+);
+
+export default App;
+
+/** Erreur inattendue : le détail n'est affiché qu'en développement */
+export const ErrorBoundary = ({ error }: Route.ErrorBoundaryProps) => {
+  const message =
+    import.meta.env.DEV && error instanceof Error
+      ? error.message
+      : "Une erreur inattendue s'est produite.";
+
   return (
-    <main className="flex min-h-screen items-center justify-center">
-      <Loader />
+    <main className="flex min-h-screen flex-col items-center justify-center gap-10 px-4 text-center">
+      <Logo />
+      <div className="flex flex-col gap-2">
+        <h1 className="text-h4">Oups !</h1>
+        <p className="text-body">{message}</p>
+      </div>
     </main>
   );
-}
-
-export default function App() {
-  return (
-    <SessionProvider>
-      <Outlet />
-    </SessionProvider>
-  );
-}
-
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = "Oups !";
-  let details = "Une erreur inattendue s'est produite.";
-  let stack: string | undefined;
-
-  if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? "Page introuvable" : "Erreur";
-    details =
-      error.status === 404
-        ? "La page que vous cherchez n'existe pas."
-        : error.statusText || details;
-  } else if (import.meta.env.DEV && error && error instanceof Error) {
-    details = error.message;
-    stack = error.stack;
-  }
-
-  return (
-    <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
-      {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
-          <code>{stack}</code>
-        </pre>
-      )}
-    </main>
-  );
-}
+};

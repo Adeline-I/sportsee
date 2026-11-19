@@ -1340,5 +1340,49 @@
       "average": 164
     },
     "caloriesBurned": 455
+  },
+  {
+    "date": "2026-10-26",
+    "distance": 5.3,
+    "duration": 35,
+    "heartRate": {
+      "min": 142,
+      "max": 178,
+      "average": 165
+    },
+    "caloriesBurned": 380
+  },
+  {
+    "date": "2026-11-02",
+    "distance": 7,
+    "duration": 45,
+    "heartRate": {
+      "min": 140,
+      "max": 177,
+      "average": 163
+    },
+    "caloriesBurned": 495
+  },
+  {
+    "date": "2026-11-09",
+    "distance": 5.5,
+    "duration": 36,
+    "heartRate": {
+      "min": 142,
+      "max": 176,
+      "average": 164
+    },
+    "caloriesBurned": 390
+  },
+  {
+    "date": "2026-11-16",
+    "distance": 4.2,
+    "duration": 28,
+    "heartRate": {
+      "min": 143,
+      "max": 178,
+      "average": 166
+    },
+    "caloriesBurned": 305
   }
 ]

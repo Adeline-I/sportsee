@@ -8,26 +8,24 @@ import {
   type TooltipContentProps,
 } from "recharts";
 import ChartCard from "~/components/ChartCard";
-import ErrorMessage from "~/components/ErrorMessage";
-import Loader from "~/components/Loader";
+import ChartLegend from "~/components/ChartLegend";
 import PeriodNav from "~/components/PeriodNav";
 import { BAR, GRID, X_AXIS, Y_AXIS } from "~/constants/charts";
 import { useWeeklyDistances } from "~/hooks/use-weekly-distances";
+import type { Week } from "~/types";
 import { formatDayMonth, formatNumber, formatPeriod } from "~/utils/format";
 
 type WeeklyDistanceChartProps = {
   createdAt: Date;
 };
 
-type WeekBar = {
-  start: Date;
-  end: Date;
-  distance: number;
-};
+type WeekBar = Week & { distance: number };
 
 /** Au survol ou au focus du graphique : toutes les barres passent en bleu foncé */
 const BARS_HOVER =
-  "[&_.recharts-rectangle]:transition-[fill] [&_.recharts-rectangle]:duration-300 [&_.recharts-rectangle]:ease-[cubic-bezier(0.45,1.45,0.8,1)] motion-reduce:[&_.recharts-rectangle]:transition-none hover:[&_.recharts-rectangle]:fill-blue focus-within:[&_.recharts-rectangle]:fill-blue";
+  "[&_.recharts-rectangle]:transition-[fill] [&_.recharts-rectangle]:duration-300 [&_.recharts-rectangle]:ease-spring motion-reduce:[&_.recharts-rectangle]:transition-none hover:[&_.recharts-rectangle]:fill-blue focus-within:[&_.recharts-rectangle]:fill-blue";
+
+const LEGEND = [{ label: "Km", color: "bg-blue-50" }];
 
 /** Infobulle : dates de la semaine et distance */
 const DistanceTooltip = ({ active, payload }: TooltipContentProps) => {
@@ -60,7 +58,7 @@ const WeeklyDistanceChart = ({ createdAt }: WeeklyDistanceChartProps) => {
     showNext,
   } = useWeeklyDistances(createdAt);
 
-  const bars = data?.weeks.map((week, index) => ({
+  const bars = data?.distances.map((week, index) => ({
     ...week,
     label: `S${index + 1}`,
   }));
@@ -81,15 +79,11 @@ const WeeklyDistanceChart = ({ createdAt }: WeeklyDistanceChartProps) => {
           onNext={showNext}
         />
       }
+      isLoading={isLoading}
+      error={error}
     >
-      {isLoading && !data && <Loader />}
-      {error && <ErrorMessage message={error.message} />}
-
       {bars && (
-        <div
-          aria-busy={isLoading}
-          className={`flex h-full flex-col gap-2 ${isLoading ? "opacity-50 transition-opacity delay-200 duration-200 ease-linear" : ""}`}
-        >
+        <div className="flex h-full flex-col gap-2">
           <BarChart
             responsive
             aria-label="Kilomètres par semaine"
@@ -109,13 +103,7 @@ const WeeklyDistanceChart = ({ createdAt }: WeeklyDistanceChartProps) => {
             />
             <Bar {...BAR} dataKey="distance" fill="var(--color-blue-30)" />
           </BarChart>
-          <p className="flex items-center gap-[3.5px] text-body-sm text-gray/60">
-            <span
-              className="size-2 rounded-full bg-blue-50"
-              aria-hidden="true"
-            />
-            Km
-          </p>
+          <ChartLegend items={LEGEND} />
         </div>
       )}
     </ChartCard>

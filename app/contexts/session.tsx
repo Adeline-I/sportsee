@@ -1,5 +1,3 @@
-// Contexte de session : partage le token et les actions de connexion / déconnexion
-
 import {
   createContext,
   useCallback,
@@ -12,21 +10,24 @@ import { useNavigate } from "react-router";
 import { getToken, removeToken, saveToken } from "~/services/token";
 
 type Session = {
-  token?: string; // absent = personne n'est connecté
+  /** Absent : personne n'est connecté */
+  token?: string;
   signIn: (token: string) => void;
+  /** @param message affiché sur la page de connexion (ex. session expirée) */
   signOut: (message?: string) => void;
 };
 
 const SessionContext = createContext<Session | null>(null);
 
+/** Partage le token et les actions de connexion / déconnexion avec toute l'application */
 export const SessionProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
   // getToken est appelée une seule fois, au premier affichage
   const [token, setToken] = useState(getToken);
 
-  // Le cookie est toujours écrit ou supprimé avant de changer de page : les middlewares des routes le lisent pour autoriser ou rediriger
+  // Le cookie est écrit ou supprimé avant de changer de page : les middlewares des routes le lisent
 
-  // useCallback : signIn reste la même fonction (utile pour le useMemo plus bas)
+  // useCallback : même fonction d'un affichage à l'autre (utile pour le useMemo plus bas)
   const signIn = useCallback(
     (newToken: string) => {
       saveToken(newToken);
@@ -37,13 +38,12 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     [navigate],
   );
 
-  // useCallback : signOut est utilisée dans l'effet de useData, elle doit rester la même fonction pour ne pas relancer le chargement
+  // useCallback : signOut est dans l'effet de useProtectedData, une nouvelle fonction relancerait le chargement
   const signOut = useCallback(
     (message?: string) => {
       removeToken();
       setToken(undefined);
       // replace : le bouton « Retour » ne ramène pas à la page quittée
-      // state : message à afficher sur la page de connexion (session expirée)
       navigate("/", { replace: true, state: { message } });
     },
     [navigate],
@@ -58,7 +58,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   return <SessionContext value={session}>{children}</SessionContext>;
 };
 
-// Les composants lisent la session avec ce hook, jamais avec SessionContext directement
+/** Lit la session : à utiliser à la place de useContext(SessionContext) */
 export const useSession = () => {
   const session = useContext(SessionContext);
   if (!session) {

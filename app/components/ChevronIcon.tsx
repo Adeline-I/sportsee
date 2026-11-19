@@ -2,6 +2,7 @@ type ChevronIconProps = {
   className?: string;
 };
 
+/** Chevron vers la droite (rotate-180 pour la gauche) */
 const ChevronIcon = ({ className }: ChevronIconProps) => (
   <svg
     width="6"

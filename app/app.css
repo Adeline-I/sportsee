@@ -41,6 +41,9 @@
 
   --shadow-card: 0 4px 84px -40px #9da7fb66;
   --shadow-tooltip: 0 4px 54px -18px #9da7fb99;
+
+  /* Courbe des graphiques */
+  --ease-spring: cubic-bezier(0.45, 1.45, 0.8, 1);
 }
 
 body {

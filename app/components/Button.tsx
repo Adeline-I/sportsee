@@ -3,20 +3,21 @@ import { Link } from "react-router";
 
 type ButtonProps = {
   children: ReactNode;
+  /** Si présent : lien vers cette page, sinon vrai bouton */
   to?: string;
   type?: "button" | "submit";
 };
 
-const buttonClass =
+const BUTTON_CLASS =
   "cursor-pointer rounded-[10px] bg-blue px-10 py-4 text-center text-body-lg text-gray-10 transition-colors duration-300 ease-in hover:bg-blue-70 focus-visible:bg-blue-70 disabled:cursor-default disabled:bg-gray-10 disabled:text-gray/60 motion-reduce:transition-none";
 
 const Button = ({ children, to, type = "button" }: ButtonProps) =>
   to ? (
-    <Link to={to} className={buttonClass}>
+    <Link to={to} className={BUTTON_CLASS}>
       {children}
     </Link>
   ) : (
-    <button type={type} className={buttonClass}>
+    <button type={type} className={BUTTON_CLASS}>
       {children}
     </button>
   );
