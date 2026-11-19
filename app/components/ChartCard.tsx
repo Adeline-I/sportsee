@@ -31,8 +31,10 @@ const ChartCard = ({
   error,
   children,
 }: ChartCardProps) => {
-  // Rechargement : un graphique est déjà affiché, il reste visible mais grisé
-  const isReloading = isLoading && children !== undefined;
+  // children reste vide tant que les données du graphique ne sont pas arrivées
+  const hasChart = Boolean(children);
+  // Rechargement : le graphique reste visible, mais grisé
+  const isReloading = isLoading && hasChart;
   const reloadingClass = isReloading ? RELOADING_CLASS : "";
 
   return (
@@ -49,8 +51,10 @@ const ChartCard = ({
       <div aria-busy={isLoading} className={`min-h-0 flex-1 ${reloadingClass}`}>
         {error ? (
           <ErrorMessage message={error.message} />
+        ) : hasChart ? (
+          children
         ) : (
-          (children ?? <Loader />)
+          <Loader />
         )}
       </div>
     </div>
