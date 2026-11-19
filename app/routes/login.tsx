@@ -50,8 +50,8 @@ const Login = () => {
   };
 
   return (
-    <div className="grid min-h-screen lg:grid-cols-[1fr_auto]">
-      <main className="flex flex-col gap-10 px-4 py-8 lg:px-8">
+    <main className="grid min-h-screen lg:grid-cols-[1fr_auto]">
+      <div className="flex flex-col gap-10 px-4 py-8 lg:px-8">
         <div className="xl:pl-17">
           <Logo />
         </div>
@@ -96,7 +96,7 @@ const Login = () => {
             <p className="text-body">Mot de passe oublié ?</p>
           </form>
         </div>
-      </main>
+      </div>
       <div className="relative hidden lg:block">
         <img
           src={loginPhoto}
@@ -111,7 +111,7 @@ const Login = () => {
           suivez vos progrès et atteignez vos objectifs.
         </p>
       </div>
-    </div>
+    </main>
   );
 };
 
