@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "44505037-a5b1-4490-bcaa-b272e42faadf",
     "name": "SportSee – Gemini",
-    "description": "Collection pour tester l'API Gemini de Google (mission 2 de SportSee : préparer l'utilisation d'une IA pour créer des plans d'entraînement).\n\n**Avant de commencer**\n\n1. Créer une clé API sur Google AI Studio (aistudio.google.com/apikey).\n    \n2. Choisir l'environnement **Gemini** en haut à droite.\n    \n3. Mettre la clé dans la variable `apiKey` de cet environnement. Elle est sécurisée : elle reste sur l'ordinateur et n'est jamais partagée ni exportée.\n    \n\nLa clé est ensuite envoyée automatiquement avec chaque requête. C'est réglé une seule fois, sur la collection (onglet Authorization).\n\n**Limites**\n\n- Taille : jusqu'à environ 1 million de tokens envoyés et 65 000 tokens de réponse (voir Get model).\n    \n- Coût : gratuit avec l'offre gratuite. Avec l'offre payante, on paie selon le nombre de tokens envoyés et reçus.\n    \n- Quotas de l'offre gratuite : 15 requêtes par minute et 500 par jour, remis à zéro chaque jour à 9 h (heure française). Au-delà, l'API renvoie une erreur `429 RESOURCE_EXHAUSTED` (ressources épuisées).\n    \n- Disponibilité : l'IA est souvent surchargée (erreur 503), parfois après plus d'une minute d'attente.\n    \n- Confidentialité : avec l'offre gratuite, Google peut utiliser ce qu'on lui envoie pour améliorer ses produits. Il ne faut donc jamais envoyer de données personnelles.",
+    "description": "Collection pour tester l'API Gemini de Google (mission 2 de SportSee : préparer l'utilisation d'une IA pour créer des plans d'entraînement).\n\n**Avant de commencer**\n\n1. Créer une clé API sur Google AI Studio (aistudio.google.com/apikey).\n    \n2. Choisir l'environnement **Gemini** en haut à droite.\n    \n3. Mettre la clé dans la variable `apiKey` de cet environnement, cliquer sur **Secure**, et ne jamais cliquer sur **Share** pour cette variable : la clé reste alors sur l'ordinateur et n'est ni partagée ni exportée.\n    \n\nLa clé est ensuite envoyée automatiquement avec chaque requête. C'est réglé une seule fois, sur la collection (onglet Authorization).\n\n**Limites**\n\n- Taille : jusqu'à environ 1 million de tokens envoyés et 65 000 tokens de réponse (voir Get model).\n    \n- Coût : gratuit avec l'offre gratuite. Avec l'offre payante, on paie selon le nombre de tokens envoyés et reçus.\n    \n- Quotas de l'offre gratuite : 15 requêtes par minute et 500 par jour, remis à zéro chaque jour à minuit, heure du Pacifique. Au-delà, l'API renvoie une erreur `429 RESOURCE_EXHAUSTED` (ressources épuisées).\n    \n- Disponibilité : l'IA est souvent surchargée (erreur 503), parfois après plus d'une minute d'attente.\n    \n- Confidentialité : avec l'offre gratuite, Google peut utiliser ce qu'on lui envoie pour améliorer ses produits. Il ne faut donc jamais envoyer de données personnelles.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "59226583"
   },
@@ -31,7 +31,7 @@
             "gemini-3.5-flash-lite:generateContent"
           ]
         },
-        "description": "Envoie une question à l'IA Gemini et récupère sa réponse.\n\n**Ce qu'on envoie** : la question, dans `text`.\n\n**Ce qu'on reçoit** : la réponse de l'IA, dans `text`. Elle peut arriver en plusieurs morceaux, qu'il faut mettre bout à bout. On reçoit aussi d'autres informations, par exemple le nombre de tokens utilisés. Un token correspond à un certain nombre de caractères (environ 4 pour Gemini) : c'est l'unité qui sert à compter les limites et le prix de l'utilisation de l'API.\n\n**Réglages testés** (voir les exemples) :\n\n- Température (0 et 2) : elle est censée régler la part de hasard dans la réponse. À 0, l'IA choisit toujours les mots les plus probables, et la réponse devrait être toujours la même. À 2, elle devrait être plus variée, voire farfelue.\n    \n- Top P (0,1) : il est censé limiter le choix de l'IA aux mots les plus probables, pour une réponse plus prévisible.\n    \n- Résultat : on a comparé les réponses entre elles et avec la réponse par défaut. À température 0, deux envois donnent deux réponses différentes. À température 2 et avec top P 0,1, les réponses restent aussi sages que celle par défaut. Ce modèle ne semble donc pas tenir compte de ces deux réglages.\n    \n- Longueur maximale (50 tokens) : elle limite la longueur de la réponse. Une fois la limite atteinte, la réponse est coupée net, même au milieu d'une phrase, et l'API indique qu'elle a été coupée. La limite n'est pas exacte : on a obtenu entre 48 et 60 tokens.\n    \n\n**Erreurs testées** (voir les exemples) :\n\n- Mauvaise clé : erreur 400.\n    \n- Requête mal écrite : erreur 400.\n    \n- IA surchargée : erreur 503, il faut réessayer plus tard. Elle arrive souvent avec l'offre gratuite (voir les limites dans la description de la collection)."
+        "description": "Envoie une question à l'IA Gemini et récupère sa réponse.\n\n**Ce qu'on envoie** : la question, dans `text`.\n\n**Ce qu'on reçoit** : la réponse de l'IA, dans `text`. Elle peut arriver en plusieurs morceaux, qu'il faut mettre bout à bout. On reçoit aussi d'autres informations, par exemple le nombre de tokens utilisés. Un token correspond à un certain nombre de caractères (environ 4 pour Gemini) : c'est l'unité qui sert à compter les limites et le prix de l'utilisation de l'API.\n\n**Réglages testés** (voir les exemples) :\n\n- Température (0 et 2) : elle est censée régler la part de hasard dans la réponse. À 0, l'IA choisit toujours les mots les plus probables, et la réponse devrait être toujours la même. À 2, elle devrait être plus variée, voire farfelue.\n    \n- Top P (0,1) : il est censé limiter le choix de l'IA aux mots les plus probables, pour une réponse plus prévisible.\n    \n- Résultat : on a comparé les réponses entre elles et avec la réponse par défaut. À température 0, deux envois donnent deux réponses différentes (exemples Temperature 0 et Temperature 0 (bis)). À température 2 et avec top P 0,1, les réponses restent aussi sages que celle par défaut. Ce modèle ne semble donc pas tenir compte de ces deux réglages.\n    \n- Longueur maximale (50 tokens) : elle limite la longueur de la réponse. Une fois la limite atteinte, la réponse est coupée net, même au milieu d'une phrase, et l'API indique qu'elle a été coupée. La limite n'est pas exacte : on a obtenu entre 48 et 60 tokens.\n    \n\n**Erreurs testées** (voir les exemples) :\n\n- Mauvaise clé : erreur 400 (clé remplacée par une fausse valeur dans l'onglet Authorization de la requête).\n    \n- Requête mal écrite : erreur 400.\n    \n- IA surchargée : erreur 503, il faut réessayer plus tard. Elle arrive souvent avec l'offre gratuite (voir les limites dans la description de la collection)."
       },
       "response": [
         {
@@ -120,91 +120,6 @@
           "body": "{\n  \"candidates\": [\n    {\n      \"content\": {\n        \"parts\": [\n          {\n            \"text\": \"Voici trois conseils simples pour bien débuter la course à pied :\\n\\n1. **Alternez marche et course**\\n   Ne cherchez pas à courir tout de suite pendant 30 minutes. Au début, courez 1 minute, puis marchez 2 minutes, et répétez cela. Cela permet au corps de s'adapter en douceur et d'éviter les blessures et l'essoufflement.\\n\\n2. **Équipez-vous de bonnes chaussures**\\n   C'est le seul investissement vraiment indispensable. Rendez-vous dans un magasin spécialisé pour trouver des chaussures adaptées à votre foulée et à votre morphologie. Cela protégera vos articulations.\\n\\n3. **Courez à votre rythme (parlez !)**\\n   La règle d'or pour débuter est de courir à une allure où vous êtes capable de tenir une conversation sans être totalement essoufflé. Si vous êtes trop essoufflé, c'est que vous allez trop vite. \\n\\nLe petit bonus : **La régularité prime sur l'intensité**. Mieux vaut courir 2 à 3 fois par semaine pendant 20 minutes que 2 heures d'un coup le dimanche !\",\n            \"thoughtSignature\": \"EpYBCpMBAWkUfRMT3RVHawCP+MW6ZZEPlSTVYATSRqdH3s6dXOyFh8KZEpBNyC7+chlgFEOEVYWMQ7+V+7kHxQd/LuTbw5eImEPqnIPocsF+VfuugkDriFYvtlSC8atApQddfKEl2a82uq2jhZOdN2MzpkqSMWR4Dd6K4pfF9KyFv0ldoknKDNcxU6AAg8jatR6iXi2RwgX3\"\n          }\n        ],\n        \"role\": \"model\"\n      },\n      \"finishReason\": \"STOP\",\n      \"index\": 0\n    }\n  ],\n  \"usageMetadata\": {\n    \"promptTokenCount\": 14,\n    \"candidatesTokenCount\": 255,\n    \"totalTokenCount\": 269,\n    \"promptTokensDetails\": [\n      {\n        \"modality\": \"TEXT\",\n        \"tokenCount\": 14\n      }\n    ],\n    \"serviceTier\": \"standard\"\n  },\n  \"modelVersion\": \"gemini-3.5-flash-lite\",\n  \"responseId\": \"FsAEa-eeG57uxs0P9JXB2AM\"\n}"
         },
         {
-          "name": "Error - model overloaded",
-          "originalRequest": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"contents\": [\r\n    {\r\n      \"parts\": [\r\n        { \"text\": \"Donne trois conseils simples pour bien débuter la course à pied.\" }\r\n      ]\r\n    }\r\n  ],\r\n  \"generationConfig\": {\r\n    \"temperature\": 0\r\n  }\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/models/gemini-3.5-flash-lite:generateContent",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "models",
-                "gemini-3.5-flash-lite:generateContent"
-              ]
-            }
-          },
-          "status": "Service Unavailable",
-          "code": 503,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": ":status",
-              "value": "503"
-            },
-            {
-              "key": "x-gemini-service-tier",
-              "value": "standard"
-            },
-            {
-              "key": "vary",
-              "value": "Origin, X-Origin, Referer"
-            },
-            {
-              "key": "content-type",
-              "value": "application/json; charset=UTF-8"
-            },
-            {
-              "key": "content-encoding",
-              "value": "gzip"
-            },
-            {
-              "key": "date",
-              "value": "Tue, 24 Nov 2026 14:29:02 GMT"
-            },
-            {
-              "key": "server",
-              "value": "scaffolding on HTTPServer2"
-            },
-            {
-              "key": "content-length",
-              "value": "172"
-            },
-            {
-              "key": "x-xss-protection",
-              "value": "0"
-            },
-            {
-              "key": "x-frame-options",
-              "value": "SAMEORIGIN"
-            },
-            {
-              "key": "x-content-type-options",
-              "value": "nosniff"
-            },
-            {
-              "key": "server-timing",
-              "value": "gfet4t7; dur=2370"
-            },
-            {
-              "key": "alt-svc",
-              "value": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
-            }
-          ],
-          "cookie": [],
-          "body": "{\n  \"error\": {\n    \"code\": 503,\n    \"message\": \"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\n    \"status\": \"UNAVAILABLE\"\n  }\n}"
-        },
-        {
           "name": "Temperature 0",
           "originalRequest": {
             "method": "POST",
@@ -288,6 +203,91 @@
           ],
           "cookie": [],
           "body": "{\n  \"candidates\": [\n    {\n      \"content\": {\n        \"parts\": [\n          {\n            \"text\": \"Voici trois conseils simples pour bien débuter la course à pied :\\n\\n1. **Alternez marche et course :** Ne cherchez pas à courir tout de suite pendant 30 minutes. Commencez par 1 minute de course et 1 ou 2 minutes de marche, et répétez cela pendant 20 minutes. Cela évite les blessures et aide le corps à s'adapter en douceur.\\n2. **Investissez dans de bonnes chaussures :** Pas besoin de la tenue la plus chère, mais vos pieds ont besoin d'un bon amorti et d'un maintien adapté pour éviter les douleurs et les blessures (tendinites, ampoules). Rendez-vous dans un magasin spécialisé si possible.\\n3. **Écoutez votre corps (et allez lentement) :** Au début, courez à une allure où vous êtes capable de tenir une conversation sans être essoufflé. Si vous avez mal (au-delà de la simple fatigue musculaire), arrêtez-vous. La régularité prime sur l'intensité !\",\n            \"thoughtSignature\": \"EpYBCpMBAWkUfRN/TS5R6FcI85TuGutOV4WSfYSODUY6Nz0VeuDxQxMrW4X9CzkdkLhhGuNLAOVB26SlqSK1HBGJPnwFj/L0W1fNiZa0CLgL9RoR29LKC1ZqVH6qpir10O8bqfI06TB+naZuRvSTcEK6OqYqqEgnlUfItbg5uA9m71QDswh3L+Udwlem7C6o5CwXLdl4lW5G\"\n          }\n        ],\n        \"role\": \"model\"\n      },\n      \"finishReason\": \"STOP\",\n      \"index\": 0\n    }\n  ],\n  \"usageMetadata\": {\n    \"promptTokenCount\": 14,\n    \"candidatesTokenCount\": 218,\n    \"totalTokenCount\": 232,\n    \"promptTokensDetails\": [\n      {\n        \"modality\": \"TEXT\",\n        \"tokenCount\": 14\n      }\n    ],\n    \"serviceTier\": \"standard\"\n  },\n  \"modelVersion\": \"gemini-3.5-flash-lite\",\n  \"responseId\": \"XKAFa4S-O_P0vdIPkbfE8Qg\"\n}"
+        },
+        {
+          "name": "Temperature 0 (bis)",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"contents\": [\r\n    {\r\n      \"parts\": [\r\n        { \"text\": \"Donne trois conseils simples pour bien débuter la course à pied.\" }\r\n      ]\r\n    }\r\n  ],\r\n  \"generationConfig\": {\r\n    \"temperature\": 0\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/models/gemini-3.5-flash-lite:generateContent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "models",
+                "gemini-3.5-flash-lite:generateContent"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": ":status",
+              "value": "200"
+            },
+            {
+              "key": "x-gemini-service-tier",
+              "value": "standard"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=UTF-8"
+            },
+            {
+              "key": "vary",
+              "value": "Origin, X-Origin, Referer"
+            },
+            {
+              "key": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "key": "date",
+              "value": "Tue, 24 Nov 2026 22:52:43 GMT"
+            },
+            {
+              "key": "server",
+              "value": "scaffolding on HTTPServer2"
+            },
+            {
+              "key": "content-length",
+              "value": "970"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "server-timing",
+              "value": "gfet4t7; dur=979"
+            },
+            {
+              "key": "alt-svc",
+              "value": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"candidates\": [\n    {\n      \"content\": {\n        \"parts\": [\n          {\n            \"text\": \"Voici trois conseils simples pour bien débuter la course à pied :\\n\\n1. **Alternez marche et course :** Ne cherchez pas à courir tout de suite pendant 30 minutes. Commencez par 1 minute de course et 1 ou 2 minutes de marche, et répétez cela pendant 20 minutes. Augmentez progressivement le temps de course au fil des semaines.\\n2. **Investissez dans de bonnes chaussures :** Pas besoin de la tenue la plus chère, mais vos pieds ont besoin d'un bon amorti et d'un maintien adapté pour éviter les blessures. Rendez-vous dans un magasin spécialisé si possible.\\n3. **Écoutez votre corps :** Allez-y à votre rythme. Vous devez être capable de tenir une conversation en courant (c'est le signe que vous êtes dans le bon rythme d'endurance). Si vous avez mal (au-delà de la simple fatigue musculaire), arrêtez-vous.\",\n            \"thoughtSignature\": \"EpYBCpMBAWkUfRNRG5a6GP8Mkp6gwRP83jbr20nLS80oxUssLfzVomllHRyWbiPk/1QEMVyaB5QUCGBp5rV49XyZmdaPjZxzRkR5kthj3UOF8ZWbHovnPI5Q9OkNOVvAgJOI9HKMSa3Kpec/pQxBC3CIU1xqmegkhVRdt364rOqXA88tDwUMGg2rAu4QIDIG+YV/rsgJqu1L\"\n          }\n        ],\n        \"role\": \"model\"\n      },\n      \"finishReason\": \"STOP\",\n      \"index\": 0\n    }\n  ],\n  \"usageMetadata\": {\n    \"promptTokenCount\": 14,\n    \"candidatesTokenCount\": 202,\n    \"totalTokenCount\": 216,\n    \"promptTokensDetails\": [\n      {\n        \"modality\": \"TEXT\",\n        \"tokenCount\": 14\n      }\n    ],\n    \"serviceTier\": \"standard\"\n  },\n  \"modelVersion\": \"gemini-3.5-flash-lite\",\n  \"responseId\": \"OhUGa8ejD4n9vdIPrJP12Q8\"\n}"
         },
         {
           "name": "Temperature 2",
@@ -543,6 +543,91 @@
           ],
           "cookie": [],
           "body": "{\n  \"candidates\": [\n    {\n      \"content\": {\n        \"parts\": [\n          {\n            \"text\": \"Voici trois conseils simples pour bien débuter la course à pied :\\n\\n1. **Alternez marche\"\n          },\n          {\n            \"text\": \" et course (le cardio-splitter) :** N'essayez pas de courir 30 minutes d'affilée dès le premier jour. Commencez par 1 minute de course et\",\n            \"thoughtSignature\": \"EpYBCpMBAWkUfRMG53lfRRcm7z8AD+QUAvYS4AS2Wc7u4xJ6Cc0/pEtPBuLsXs2ealVCn0chUS4r0qKwv4uHnseJGXHsHuS+4CXdWfTEgFAdmpZoKE4T3UM40qz13LoA1NsqT9/tZvIKYAs/Rwayxl3uxKKsmYTIt4gCnZNPs9lhiaaHouVwxfWgX8rAF2QUN5bHHKD7bbmH\"\n          }\n        ],\n        \"role\": \"model\"\n      },\n      \"finishReason\": \"MAX_TOKENS\",\n      \"index\": 0\n    }\n  ],\n  \"usageMetadata\": {\n    \"promptTokenCount\": 14,\n    \"candidatesTokenCount\": 60,\n    \"totalTokenCount\": 74,\n    \"promptTokensDetails\": [\n      {\n        \"modality\": \"TEXT\",\n        \"tokenCount\": 14\n      }\n    ],\n    \"serviceTier\": \"standard\"\n  },\n  \"modelVersion\": \"gemini-3.5-flash-lite\",\n  \"responseId\": \"eKYFa6qxGuKH28oP9JXfiQ4\"\n}"
+        },
+        {
+          "name": "Error - model overloaded",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"contents\": [\r\n    {\r\n      \"parts\": [\r\n        { \"text\": \"Donne trois conseils simples pour bien débuter la course à pied.\" }\r\n      ]\r\n    }\r\n  ],\r\n  \"generationConfig\": {\r\n    \"temperature\": 0\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/models/gemini-3.5-flash-lite:generateContent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "models",
+                "gemini-3.5-flash-lite:generateContent"
+              ]
+            }
+          },
+          "status": "Service Unavailable",
+          "code": 503,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": ":status",
+              "value": "503"
+            },
+            {
+              "key": "x-gemini-service-tier",
+              "value": "standard"
+            },
+            {
+              "key": "vary",
+              "value": "Origin, X-Origin, Referer"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=UTF-8"
+            },
+            {
+              "key": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "key": "date",
+              "value": "Tue, 24 Nov 2026 14:29:02 GMT"
+            },
+            {
+              "key": "server",
+              "value": "scaffolding on HTTPServer2"
+            },
+            {
+              "key": "content-length",
+              "value": "172"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "server-timing",
+              "value": "gfet4t7; dur=2370"
+            },
+            {
+              "key": "alt-svc",
+              "value": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"error\": {\n    \"code\": 503,\n    \"message\": \"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\n    \"status\": \"UNAVAILABLE\"\n  }\n}"
         },
         {
           "name": "Error - invalid API key",
