@@ -77,9 +77,19 @@ app/
 
 ## Postman
 
-1. Importer les deux fichiers du dossier `postman/`.
+Le dossier `postman/` contient deux collections, chacune avec son environnement.
+
+**Backend SportSee**
+
+1. Importer `sportsee-backend.postman_collection.json` et `local.postman_environment.json`.
 2. Sélectionner l'environnement **Local**.
 3. Lancer la requête **Login** : le token est ensuite réutilisé automatiquement par les autres requêtes.
+
+**API Gemini**
+
+1. Importer `sportsee-gemini.postman_collection.json` et `gemini.postman_environment.json`.
+2. Sélectionner l'environnement **Gemini**.
+3. Renseigner sa clé API dans la variable `apiKey` (voir la description de la collection).
 
 ## Scripts
 

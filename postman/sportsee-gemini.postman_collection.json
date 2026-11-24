@@ -1,0 +1,819 @@
+{
+  "info": {
+    "_postman_id": "44505037-a5b1-4490-bcaa-b272e42faadf",
+    "name": "SportSee – Gemini",
+    "description": "Collection pour tester l'API Gemini de Google (mission 2 de SportSee : préparer l'utilisation d'une IA pour créer des plans d'entraînement).\n\n**Avant de commencer**\n\n1. Créer une clé API sur Google AI Studio (aistudio.google.com/apikey).\n    \n2. Choisir l'environnement **Gemini** en haut à droite.\n    \n3. Mettre la clé dans la variable `apiKey` de cet environnement. Elle est sécurisée : elle reste sur l'ordinateur et n'est jamais partagée ni exportée.\n    \n\nLa clé est ensuite envoyée automatiquement avec chaque requête. C'est réglé une seule fois, sur la collection (onglet Authorization).\n\n**Limites**\n\n- Taille : jusqu'à environ 1 million de tokens envoyés et 65 000 tokens de réponse (voir Get model).\n    \n- Coût : gratuit avec l'offre gratuite. Avec l'offre payante, on paie selon le nombre de tokens envoyés et reçus.\n    \n- Quotas de l'offre gratuite : 15 requêtes par minute et 500 par jour, remis à zéro chaque jour à 9 h (heure française). Au-delà, l'API renvoie une erreur `429 RESOURCE_EXHAUSTED` (ressources épuisées).\n    \n- Disponibilité : l'IA est souvent surchargée (erreur 503), parfois après plus d'une minute d'attente.\n    \n- Confidentialité : avec l'offre gratuite, Google peut utiliser ce qu'on lui envoie pour améliorer ses produits. Il ne faut donc jamais envoyer de données personnelles.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "59226583"
+  },
+  "item": [
+    {
+      "name": "Generate content",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"contents\": [\r\n    {\r\n      \"parts\": [\r\n        { \"text\": \"Donne trois conseils simples pour bien débuter la course à pied.\" }\r\n      ]\r\n    }\r\n  ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/models/gemini-3.5-flash-lite:generateContent",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "models",
+            "gemini-3.5-flash-lite:generateContent"
+          ]
+        },
+        "description": "Envoie une question à l'IA Gemini et récupère sa réponse.\n\n**Ce qu'on envoie** : la question, dans `text`.\n\n**Ce qu'on reçoit** : la réponse de l'IA, dans `text`. Elle peut arriver en plusieurs morceaux, qu'il faut mettre bout à bout. On reçoit aussi d'autres informations, par exemple le nombre de tokens utilisés. Un token correspond à un certain nombre de caractères (environ 4 pour Gemini) : c'est l'unité qui sert à compter les limites et le prix de l'utilisation de l'API.\n\n**Réglages testés** (voir les exemples) :\n\n- Température (0 et 2) : elle est censée régler la part de hasard dans la réponse. À 0, l'IA choisit toujours les mots les plus probables, et la réponse devrait être toujours la même. À 2, elle devrait être plus variée, voire farfelue.\n    \n- Top P (0,1) : il est censé limiter le choix de l'IA aux mots les plus probables, pour une réponse plus prévisible.\n    \n- Résultat : on a comparé les réponses entre elles et avec la réponse par défaut. À température 0, deux envois donnent deux réponses différentes. À température 2 et avec top P 0,1, les réponses restent aussi sages que celle par défaut. Ce modèle ne semble donc pas tenir compte de ces deux réglages.\n    \n- Longueur maximale (50 tokens) : elle limite la longueur de la réponse. Une fois la limite atteinte, la réponse est coupée net, même au milieu d'une phrase, et l'API indique qu'elle a été coupée. La limite n'est pas exacte : on a obtenu entre 48 et 60 tokens.\n    \n\n**Erreurs testées** (voir les exemples) :\n\n- Mauvaise clé : erreur 400.\n    \n- Requête mal écrite : erreur 400.\n    \n- IA surchargée : erreur 503, il faut réessayer plus tard. Elle arrive souvent avec l'offre gratuite (voir les limites dans la description de la collection)."
+      },
+      "response": [
+        {
+          "name": "Default settings",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"contents\": [\r\n    {\r\n      \"parts\": [\r\n        { \"text\": \"Donne trois conseils simples pour bien débuter la course à pied.\" }\r\n      ]\r\n    }\r\n  ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/models/gemini-3.5-flash-lite:generateContent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "models",
+                "gemini-3.5-flash-lite:generateContent"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": ":status",
+              "value": "200"
+            },
+            {
+              "key": "x-gemini-service-tier",
+              "value": "standard"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=UTF-8"
+            },
+            {
+              "key": "vary",
+              "value": "Origin, X-Origin, Referer"
+            },
+            {
+              "key": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "key": "date",
+              "value": "Mon, 23 Nov 2026 22:37:11 GMT"
+            },
+            {
+              "key": "server",
+              "value": "scaffolding on HTTPServer2"
+            },
+            {
+              "key": "content-length",
+              "value": "1058"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "server-timing",
+              "value": "gfet4t7; dur=1146"
+            },
+            {
+              "key": "alt-svc",
+              "value": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"candidates\": [\n    {\n      \"content\": {\n        \"parts\": [\n          {\n            \"text\": \"Voici trois conseils simples pour bien débuter la course à pied :\\n\\n1. **Alternez marche et course**\\n   Ne cherchez pas à courir tout de suite pendant 30 minutes. Au début, courez 1 minute, puis marchez 2 minutes, et répétez cela. Cela permet au corps de s'adapter en douceur et d'éviter les blessures et l'essoufflement.\\n\\n2. **Équipez-vous de bonnes chaussures**\\n   C'est le seul investissement vraiment indispensable. Rendez-vous dans un magasin spécialisé pour trouver des chaussures adaptées à votre foulée et à votre morphologie. Cela protégera vos articulations.\\n\\n3. **Courez à votre rythme (parlez !)**\\n   La règle d'or pour débuter est de courir à une allure où vous êtes capable de tenir une conversation sans être totalement essoufflé. Si vous êtes trop essoufflé, c'est que vous allez trop vite. \\n\\nLe petit bonus : **La régularité prime sur l'intensité**. Mieux vaut courir 2 à 3 fois par semaine pendant 20 minutes que 2 heures d'un coup le dimanche !\",\n            \"thoughtSignature\": \"EpYBCpMBAWkUfRMT3RVHawCP+MW6ZZEPlSTVYATSRqdH3s6dXOyFh8KZEpBNyC7+chlgFEOEVYWMQ7+V+7kHxQd/LuTbw5eImEPqnIPocsF+VfuugkDriFYvtlSC8atApQddfKEl2a82uq2jhZOdN2MzpkqSMWR4Dd6K4pfF9KyFv0ldoknKDNcxU6AAg8jatR6iXi2RwgX3\"\n          }\n        ],\n        \"role\": \"model\"\n      },\n      \"finishReason\": \"STOP\",\n      \"index\": 0\n    }\n  ],\n  \"usageMetadata\": {\n    \"promptTokenCount\": 14,\n    \"candidatesTokenCount\": 255,\n    \"totalTokenCount\": 269,\n    \"promptTokensDetails\": [\n      {\n        \"modality\": \"TEXT\",\n        \"tokenCount\": 14\n      }\n    ],\n    \"serviceTier\": \"standard\"\n  },\n  \"modelVersion\": \"gemini-3.5-flash-lite\",\n  \"responseId\": \"FsAEa-eeG57uxs0P9JXB2AM\"\n}"
+        },
+        {
+          "name": "Error - model overloaded",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"contents\": [\r\n    {\r\n      \"parts\": [\r\n        { \"text\": \"Donne trois conseils simples pour bien débuter la course à pied.\" }\r\n      ]\r\n    }\r\n  ],\r\n  \"generationConfig\": {\r\n    \"temperature\": 0\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/models/gemini-3.5-flash-lite:generateContent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "models",
+                "gemini-3.5-flash-lite:generateContent"
+              ]
+            }
+          },
+          "status": "Service Unavailable",
+          "code": 503,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": ":status",
+              "value": "503"
+            },
+            {
+              "key": "x-gemini-service-tier",
+              "value": "standard"
+            },
+            {
+              "key": "vary",
+              "value": "Origin, X-Origin, Referer"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=UTF-8"
+            },
+            {
+              "key": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "key": "date",
+              "value": "Tue, 24 Nov 2026 14:29:02 GMT"
+            },
+            {
+              "key": "server",
+              "value": "scaffolding on HTTPServer2"
+            },
+            {
+              "key": "content-length",
+              "value": "172"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "server-timing",
+              "value": "gfet4t7; dur=2370"
+            },
+            {
+              "key": "alt-svc",
+              "value": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"error\": {\n    \"code\": 503,\n    \"message\": \"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\n    \"status\": \"UNAVAILABLE\"\n  }\n}"
+        },
+        {
+          "name": "Temperature 0",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"contents\": [\r\n    {\r\n      \"parts\": [\r\n        { \"text\": \"Donne trois conseils simples pour bien débuter la course à pied.\" }\r\n      ]\r\n    }\r\n  ],\r\n  \"generationConfig\": {\r\n    \"temperature\": 0\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/models/gemini-3.5-flash-lite:generateContent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "models",
+                "gemini-3.5-flash-lite:generateContent"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": ":status",
+              "value": "200"
+            },
+            {
+              "key": "x-gemini-service-tier",
+              "value": "standard"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=UTF-8"
+            },
+            {
+              "key": "vary",
+              "value": "Origin, X-Origin, Referer"
+            },
+            {
+              "key": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "key": "date",
+              "value": "Tue, 24 Nov 2026 14:34:07 GMT"
+            },
+            {
+              "key": "server",
+              "value": "scaffolding on HTTPServer2"
+            },
+            {
+              "key": "content-length",
+              "value": "1004"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "server-timing",
+              "value": "gfet4t7; dur=2220"
+            },
+            {
+              "key": "alt-svc",
+              "value": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"candidates\": [\n    {\n      \"content\": {\n        \"parts\": [\n          {\n            \"text\": \"Voici trois conseils simples pour bien débuter la course à pied :\\n\\n1. **Alternez marche et course :** Ne cherchez pas à courir tout de suite pendant 30 minutes. Commencez par 1 minute de course et 1 ou 2 minutes de marche, et répétez cela pendant 20 minutes. Cela évite les blessures et aide le corps à s'adapter en douceur.\\n2. **Investissez dans de bonnes chaussures :** Pas besoin de la tenue la plus chère, mais vos pieds ont besoin d'un bon amorti et d'un maintien adapté pour éviter les douleurs et les blessures (tendinites, ampoules). Rendez-vous dans un magasin spécialisé si possible.\\n3. **Écoutez votre corps (et allez lentement) :** Au début, courez à une allure où vous êtes capable de tenir une conversation sans être essoufflé. Si vous avez mal (au-delà de la simple fatigue musculaire), arrêtez-vous. La régularité prime sur l'intensité !\",\n            \"thoughtSignature\": \"EpYBCpMBAWkUfRN/TS5R6FcI85TuGutOV4WSfYSODUY6Nz0VeuDxQxMrW4X9CzkdkLhhGuNLAOVB26SlqSK1HBGJPnwFj/L0W1fNiZa0CLgL9RoR29LKC1ZqVH6qpir10O8bqfI06TB+naZuRvSTcEK6OqYqqEgnlUfItbg5uA9m71QDswh3L+Udwlem7C6o5CwXLdl4lW5G\"\n          }\n        ],\n        \"role\": \"model\"\n      },\n      \"finishReason\": \"STOP\",\n      \"index\": 0\n    }\n  ],\n  \"usageMetadata\": {\n    \"promptTokenCount\": 14,\n    \"candidatesTokenCount\": 218,\n    \"totalTokenCount\": 232,\n    \"promptTokensDetails\": [\n      {\n        \"modality\": \"TEXT\",\n        \"tokenCount\": 14\n      }\n    ],\n    \"serviceTier\": \"standard\"\n  },\n  \"modelVersion\": \"gemini-3.5-flash-lite\",\n  \"responseId\": \"XKAFa4S-O_P0vdIPkbfE8Qg\"\n}"
+        },
+        {
+          "name": "Temperature 2",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"contents\": [\r\n    {\r\n      \"parts\": [\r\n        { \"text\": \"Donne trois conseils simples pour bien débuter la course à pied.\" }\r\n      ]\r\n    }\r\n  ],\r\n  \"generationConfig\": {\r\n    \"temperature\": 2\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/models/gemini-3.5-flash-lite:generateContent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "models",
+                "gemini-3.5-flash-lite:generateContent"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": ":status",
+              "value": "200"
+            },
+            {
+              "key": "x-gemini-service-tier",
+              "value": "standard"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=UTF-8"
+            },
+            {
+              "key": "vary",
+              "value": "Origin, X-Origin, Referer"
+            },
+            {
+              "key": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "key": "date",
+              "value": "Tue, 24 Nov 2026 14:44:54 GMT"
+            },
+            {
+              "key": "server",
+              "value": "scaffolding on HTTPServer2"
+            },
+            {
+              "key": "content-length",
+              "value": "976"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "server-timing",
+              "value": "gfet4t7; dur=20182"
+            },
+            {
+              "key": "alt-svc",
+              "value": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"candidates\": [\n    {\n      \"content\": {\n        \"parts\": [\n          {\n            \"text\": \"Voici trois conseils simples pour bien débuter la course à pied :\\n\\n1. **Alternez marche et course :** Ne cherchez pas à courir tout de suite pendant 30 minutes. Commencez par 1 minute de course et 1 ou 2 minutes de marche, et répétez cela sur 20 à 30 minutes. Cela évite les blessures et l'essoufflement trop rapide.\\n2. **Investissez dans de bonnes chaussures :** Pas besoin de la tenue la plus chère, mais vos pieds ont besoin d'un bon amorti et d'un maintien adapté pour éviter les douleurs articulaires. Rendez-vous dans un magasin spécialisé si possible.\\n3. **Courez à votre rythme (et pour le plaisir) :** Le bon rythme, c'est celui où vous êtes capable de tenir une conversation sans être totalement essoufflé. Si vous devez haleter, c'est que vous allez trop vite. Ne vous comparez pas aux autres !\",\n            \"thoughtSignature\": \"EpYBCpMBAWkUfRPU+CpwV6cPbUl8RMzYV8vSSJKsMqf4HW7jyMAsEKNiU+o9Pl7WXGNXo7YaLf8sDlBWBFZ3yw1/09JDlQMmJ/L0JjNOq4Ytm5AU//QJe6M/DX7eOLmjflI6b8gP5uk2dzwnTcXz+jhC3ym+vK5eL2fgVhl4SfBvwNom5V/IqAdjdL9lEzfwiS2uNqwxubeZ\"\n          }\n        ],\n        \"role\": \"model\"\n      },\n      \"finishReason\": \"STOP\",\n      \"index\": 0\n    }\n  ],\n  \"usageMetadata\": {\n    \"promptTokenCount\": 14,\n    \"candidatesTokenCount\": 208,\n    \"totalTokenCount\": 222,\n    \"promptTokensDetails\": [\n      {\n        \"modality\": \"TEXT\",\n        \"tokenCount\": 14\n      }\n    ],\n    \"serviceTier\": \"standard\"\n  },\n  \"modelVersion\": \"gemini-3.5-flash-lite\",\n  \"responseId\": \"0qIFa_P7GszyvdIPj86ssAw\"\n}"
+        },
+        {
+          "name": "Top P 0.1",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"contents\": [\r\n    {\r\n      \"parts\": [\r\n        { \"text\": \"Donne trois conseils simples pour bien débuter la course à pied.\" }\r\n      ]\r\n    }\r\n  ],\r\n  \"generationConfig\": {\r\n    \"topP\": 0.1\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/models/gemini-3.5-flash-lite:generateContent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "models",
+                "gemini-3.5-flash-lite:generateContent"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": ":status",
+              "value": "200"
+            },
+            {
+              "key": "x-gemini-service-tier",
+              "value": "standard"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=UTF-8"
+            },
+            {
+              "key": "vary",
+              "value": "Origin, X-Origin, Referer"
+            },
+            {
+              "key": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "key": "date",
+              "value": "Tue, 24 Nov 2026 14:54:57 GMT"
+            },
+            {
+              "key": "server",
+              "value": "scaffolding on HTTPServer2"
+            },
+            {
+              "key": "content-length",
+              "value": "954"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "server-timing",
+              "value": "gfet4t7; dur=2131"
+            },
+            {
+              "key": "alt-svc",
+              "value": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"candidates\": [\n    {\n      \"content\": {\n        \"parts\": [\n          {\n            \"text\": \"Voici trois conseils simples pour bien débuter la course à pied :\\n\\n1. **Alternez marche et course :** Ne cherchez pas à courir tout de suite pendant 30 minutes. Commencez par 1 minute de course et 1 ou 2 minutes de marche, et répétez cela sur 20 à 30 minutes. Cela évite les blessures et l'essoufflement trop rapide.\\n2. **Investissez dans de bonnes chaussures :** Pas besoin de la tenue la plus chère, mais vos pieds ont besoin d'un bon amorti et d'un bon maintien adaptés à votre foulée pour éviter les douleurs aux\"\n          },\n          {\n            \"text\": \" genoux et aux articulations.\\n3. **Courez à votre rythme (et discutez) :** La règle d'or pour débuter est de pouvoir tenir une conversation en courant. Si vous êtes essoufflé au point de ne plus pouvoir parler, c'est que vous allez trop vite. Ralentissez !\",\n            \"thoughtSignature\": \"EpYBCpMBAWkUfRNAe1mkLPK3oMKneOrsxmnZB+nMT4aw6oy8VTRPFgRttKjiTDL773Qmu225rs2GcuOtB3bRS5pN7ep7yI0fpnKHDPHcfFYS65Z5dwnnIiBixxmT6q3WtQJEgiPdGZoJC2fdGoWXj/Tnqrv0VytB2NoWGzH2WpbylrAPzx+ZjIkyxRVCPqZ53RPtxTltsmp/\"\n          }\n        ],\n        \"role\": \"model\"\n      },\n      \"finishReason\": \"STOP\",\n      \"index\": 0\n    }\n  ],\n  \"usageMetadata\": {\n    \"promptTokenCount\": 14,\n    \"candidatesTokenCount\": 205,\n    \"totalTokenCount\": 219,\n    \"promptTokensDetails\": [\n      {\n        \"modality\": \"TEXT\",\n        \"tokenCount\": 14\n      }\n    ],\n    \"serviceTier\": \"standard\"\n  },\n  \"modelVersion\": \"gemini-3.5-flash-lite\",\n  \"responseId\": \"P6UFa4_iHeuykdUPgJaOqQc\"\n}"
+        },
+        {
+          "name": "Max output tokens 50",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"contents\": [\r\n    {\r\n      \"parts\": [\r\n        { \"text\": \"Donne trois conseils simples pour bien débuter la course à pied.\" }\r\n      ]\r\n    }\r\n  ],\r\n  \"generationConfig\": {\r\n    \"maxOutputTokens\": 50\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/models/gemini-3.5-flash-lite:generateContent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "models",
+                "gemini-3.5-flash-lite:generateContent"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": ":status",
+              "value": "200"
+            },
+            {
+              "key": "x-gemini-service-tier",
+              "value": "standard"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=UTF-8"
+            },
+            {
+              "key": "vary",
+              "value": "Origin, X-Origin, Referer"
+            },
+            {
+              "key": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "key": "date",
+              "value": "Tue, 24 Nov 2026 15:00:09 GMT"
+            },
+            {
+              "key": "server",
+              "value": "scaffolding on HTTPServer2"
+            },
+            {
+              "key": "content-length",
+              "value": "665"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "server-timing",
+              "value": "gfet4t7; dur=1182"
+            },
+            {
+              "key": "alt-svc",
+              "value": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"candidates\": [\n    {\n      \"content\": {\n        \"parts\": [\n          {\n            \"text\": \"Voici trois conseils simples pour bien débuter la course à pied :\\n\\n1. **Alternez marche\"\n          },\n          {\n            \"text\": \" et course (le cardio-splitter) :** N'essayez pas de courir 30 minutes d'affilée dès le premier jour. Commencez par 1 minute de course et\",\n            \"thoughtSignature\": \"EpYBCpMBAWkUfRMG53lfRRcm7z8AD+QUAvYS4AS2Wc7u4xJ6Cc0/pEtPBuLsXs2ealVCn0chUS4r0qKwv4uHnseJGXHsHuS+4CXdWfTEgFAdmpZoKE4T3UM40qz13LoA1NsqT9/tZvIKYAs/Rwayxl3uxKKsmYTIt4gCnZNPs9lhiaaHouVwxfWgX8rAF2QUN5bHHKD7bbmH\"\n          }\n        ],\n        \"role\": \"model\"\n      },\n      \"finishReason\": \"MAX_TOKENS\",\n      \"index\": 0\n    }\n  ],\n  \"usageMetadata\": {\n    \"promptTokenCount\": 14,\n    \"candidatesTokenCount\": 60,\n    \"totalTokenCount\": 74,\n    \"promptTokensDetails\": [\n      {\n        \"modality\": \"TEXT\",\n        \"tokenCount\": 14\n      }\n    ],\n    \"serviceTier\": \"standard\"\n  },\n  \"modelVersion\": \"gemini-3.5-flash-lite\",\n  \"responseId\": \"eKYFa6qxGuKH28oP9JXfiQ4\"\n}"
+        },
+        {
+          "name": "Error - invalid API key",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"contents\": [\r\n    {\r\n      \"parts\": [\r\n        { \"text\": \"Donne trois conseils simples pour bien débuter la course à pied.\" }\r\n      ]\r\n    }\r\n  ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/models/gemini-3.5-flash-lite:generateContent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "models",
+                "gemini-3.5-flash-lite:generateContent"
+              ]
+            }
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": ":status",
+              "value": "400"
+            },
+            {
+              "key": "vary",
+              "value": "Origin, X-Origin, Referer"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=UTF-8"
+            },
+            {
+              "key": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "key": "date",
+              "value": "Tue, 24 Nov 2026 15:07:18 GMT"
+            },
+            {
+              "key": "server",
+              "value": "scaffolding on HTTPServer2"
+            },
+            {
+              "key": "content-length",
+              "value": "278"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "server-timing",
+              "value": "gfet4t7; dur=8"
+            },
+            {
+              "key": "alt-svc",
+              "value": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"API key not valid. Please pass a valid API key.\",\n    \"status\": \"INVALID_ARGUMENT\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"API_KEY_INVALID\",\n        \"domain\": \"googleapis.com\",\n        \"metadata\": {\n          \"service\": \"generativelanguage.googleapis.com\"\n        }\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.LocalizedMessage\",\n        \"locale\": \"en-US\",\n        \"message\": \"API key not valid. Please pass a valid API key.\"\n      }\n    ]\n  }\n}"
+        },
+        {
+          "name": "Error - invalid request",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"contents\": [\r\n    {\r\n      \"parts\": [\r\n        { \"text\": \"Donne trois conseils simples pour bien débuter la course à pied.\" }\r\n      ]\r\n    }\r\n  ]\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/models/gemini-3.5-flash-lite:generateContent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "models",
+                "gemini-3.5-flash-lite:generateContent"
+              ]
+            }
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": ":status",
+              "value": "400"
+            },
+            {
+              "key": "vary",
+              "value": "Origin, X-Origin, Referer"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=UTF-8"
+            },
+            {
+              "key": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "key": "date",
+              "value": "Tue, 24 Nov 2026 21:25:01 GMT"
+            },
+            {
+              "key": "server",
+              "value": "scaffolding on HTTPServer2"
+            },
+            {
+              "key": "content-length",
+              "value": "171"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "server-timing",
+              "value": "gfet4t7; dur=13"
+            },
+            {
+              "key": "alt-svc",
+              "value": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"Invalid JSON payload received. Unexpected end of string. Expected , or } after key:value pair.\\n\\n^\",\n    \"status\": \"INVALID_ARGUMENT\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Get model",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/models/gemini-3.5-flash-lite",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "models",
+            "gemini-3.5-flash-lite"
+          ]
+        },
+        "description": "Récupère la fiche du modèle Gemini utilisé (`gemini-3.5-flash-lite`).\n\nOn y trouve notamment :\n\n- la taille maximale de ce qu'on peut lui envoyer en une fois : environ 1 million de tokens (`inputTokenLimit`) ;\n    \n- la longueur maximale d'une réponse : environ 65 000 tokens (`outputTokenLimit`) ;\n    \n- les réglages par défaut : température 1 et top P 0,95.\n    \n\nElle sert à connaître les limites du modèle avant de l'utiliser."
+      },
+      "response": [
+        {
+          "name": "Model info",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/models/gemini-3.5-flash-lite",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "models",
+                "gemini-3.5-flash-lite"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": ":status",
+              "value": "200"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=UTF-8"
+            },
+            {
+              "key": "vary",
+              "value": "Origin, X-Origin, Referer"
+            },
+            {
+              "key": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "key": "date",
+              "value": "Tue, 24 Nov 2026 14:24:17 GMT"
+            },
+            {
+              "key": "server",
+              "value": "scaffolding on HTTPServer2"
+            },
+            {
+              "key": "content-length",
+              "value": "265"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "server-timing",
+              "value": "gfet4t7; dur=53"
+            },
+            {
+              "key": "alt-svc",
+              "value": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"name\": \"models/gemini-3.5-flash-lite\",\n  \"version\": \"3.5-flash-lite-07-2026\",\n  \"displayName\": \"Gemini 3.5 Flash Lite\",\n  \"description\": \"Gemini 3.5 Flash Lite\",\n  \"inputTokenLimit\": 1048576,\n  \"outputTokenLimit\": 65536,\n  \"supportedGenerationMethods\": [\n    \"generateContent\",\n    \"countTokens\",\n    \"createCachedContent\",\n    \"batchGenerateContent\"\n  ],\n  \"temperature\": 1,\n  \"topP\": 0.95,\n  \"topK\": 64,\n  \"maxTemperature\": 2,\n  \"thinking\": true\n}"
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "x-goog-api-key",
+        "type": "string"
+      },
+      {
+        "key": "value",
+        "value": "{{apiKey}}",
+        "type": "string"
+      }
+    ]
+  }
+}
