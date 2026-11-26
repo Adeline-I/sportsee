@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "44505037-a5b1-4490-bcaa-b272e42faadf",
     "name": "SportSee – Gemini",
-    "description": "Collection pour tester l'API Gemini de Google (mission 2 de SportSee : préparer l'utilisation d'une IA pour créer des plans d'entraînement).\n\n**Avant de commencer**\n\n1. Créer une clé API sur Google AI Studio (aistudio.google.com/apikey).\n    \n2. Choisir l'environnement **Gemini** en haut à droite.\n    \n3. Mettre la clé dans la variable `apiKey` de cet environnement, cliquer sur **Secure**, et ne jamais cliquer sur **Share** pour cette variable : la clé reste alors sur l'ordinateur et n'est ni partagée ni exportée.\n    \n\nLa clé est ensuite envoyée automatiquement avec chaque requête. C'est réglé une seule fois, sur la collection (onglet Authorization).\n\n**Limites**\n\n- Taille : jusqu'à environ 1 million de tokens envoyés et 65 000 tokens de réponse (voir Get model).\n    \n- Coût : gratuit avec l'offre gratuite. Avec l'offre payante, on paie selon le nombre de tokens envoyés et reçus.\n    \n- Quotas de l'offre gratuite : 15 requêtes par minute et 500 par jour, remis à zéro chaque jour à minuit, heure du Pacifique. Au-delà, l'API renvoie une erreur `429 RESOURCE_EXHAUSTED` (ressources épuisées).\n    \n- Disponibilité : l'IA est souvent surchargée (erreur 503), parfois après plus d'une minute d'attente.\n    \n- Confidentialité : avec l'offre gratuite, Google peut utiliser ce qu'on lui envoie pour améliorer ses produits. Il ne faut donc jamais envoyer de données personnelles.",
+    "description": "Collection pour tester l'API Gemini de Google. Elle prépare l'ajout d'une IA dans SportSee pour créer des plans d'entraînement personnalisés.\n\n**Avant de commencer**\n\n1. Créer une clé API sur Google AI Studio (aistudio.google.com/apikey).\n    \n2. Choisir l'environnement **Gemini** en haut à droite.\n    \n3. Mettre la clé dans la variable `apiKey` de cet environnement, cliquer sur **Secure**, et ne jamais cliquer sur **Share** pour cette variable : la clé reste alors sur l'ordinateur et n'est ni partagée ni exportée.\n    \n\nLa clé est ensuite envoyée automatiquement avec chaque requête. C'est réglé une seule fois, sur la collection (onglet Authorization).\n\n**Limites**\n\n- Taille : jusqu'à environ 1 million de tokens envoyés et 65 000 tokens de réponse (voir Get model).\n    \n- Coût : gratuit avec l'offre gratuite. Avec l'offre payante, on paie selon le nombre de tokens envoyés et reçus.\n    \n- Quotas de l'offre gratuite : 15 requêtes par minute et 500 par jour, remis à zéro chaque jour à minuit, heure du Pacifique (9 h en France la plupart de l'année). Au-delà, l'API renvoie une erreur `429 RESOURCE_EXHAUSTED` (ressources épuisées).\n    \n- Disponibilité : l'IA est souvent surchargée (erreur `503 UNAVAILABLE`, indisponible), parfois après plus d'une minute d'attente.\n    \n- Confidentialité : avec l'offre gratuite, Google peut utiliser ce qu'on lui envoie pour améliorer ses produits. Il ne faut donc jamais envoyer de données personnelles.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "59226583"
   },
@@ -882,6 +882,534 @@
           ],
           "cookie": [],
           "body": "{\n  \"name\": \"models/gemini-3.5-flash-lite\",\n  \"version\": \"3.5-flash-lite-07-2026\",\n  \"displayName\": \"Gemini 3.5 Flash Lite\",\n  \"description\": \"Gemini 3.5 Flash Lite\",\n  \"inputTokenLimit\": 1048576,\n  \"outputTokenLimit\": 65536,\n  \"supportedGenerationMethods\": [\n    \"generateContent\",\n    \"countTokens\",\n    \"createCachedContent\",\n    \"batchGenerateContent\"\n  ],\n  \"temperature\": 1,\n  \"topP\": 0.95,\n  \"topK\": 64,\n  \"maxTemperature\": 2,\n  \"thinking\": true\n}"
+        }
+      ]
+    },
+    {
+      "name": "Generate training plan",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"system_instruction\": {\r\n    \"parts\": [\r\n      {\r\n        \"text\": \"# Contexte\\nTu es un coach de course à pied pour SportSee, une application de suivi sportif.\\nLes utilisateurs sont des coureurs amateurs.\\n\\n# Tâche\\nCrée un plan d'entraînement personnalisé pour aider l'utilisateur à atteindre son objectif.\\n\\n# Données reçues\\nTu reçois un JSON avec :\\n- startDate et endDate : le premier et le dernier jour du plan (AAAA-MM-JJ). Si l'objectif est une course, elle a lieu le jour de endDate.\\n- goal : l'objectif de l'utilisateur.\\n- availability : les jours (day) et moments (time) où il peut courir, avec la durée maximale en minutes (maxDuration).\\n- age : son âge.\\n- sessions : ses séances des 8 dernières semaines, avec la date, la distance (km), la durée (minutes) et la vitesse moyenne (km/h). Si la liste est vide, considère que c'est un débutant.\\n- longestDistance et maxWeeklyDistance : sa plus longue séance et sa semaine la plus chargée de ces 8 semaines (km).\\n\\n# Règles\\n- Place les séances uniquement aux jours et moments de availability, entre startDate et endDate.\\n- Ne dépasse jamais maxDuration, sauf pour la course elle-même.\\n- La sécurité passe avant l'objectif.\\n- Au début, pas de séance plus longue que longestDistance ni de semaine plus chargée que maxWeeklyDistance. Ensuite, augmente petit à petit.\\n- Garde une vitesse proche de celle de ses séances passées. Tu peux l'augmenter légèrement, petit à petit.\\n- Si l'objectif n'est pas atteignable sans risque, dis-le clairement dans message.\\n- Ne promets aucun résultat ni aucune sécurité, et n'invente aucune information absente des données.\\n- Donne seulement des conseils alimentaires généraux : pas de régime, pas de compléments alimentaires. Rappelle de les adapter à ses allergies et à ses habitudes alimentaires.\\n- Ne donne aucun avis médical.\\n- Vouvoie toujours l'utilisateur. Écris en français correct, avec des mots simples et un ton encourageant.\\n\\n# Format de réponse\\nRéponds uniquement en JSON, selon le schéma fourni.\"\r\n      }\r\n    ]\r\n  },\r\n  \"contents\": [\r\n    {\r\n      \"parts\": [\r\n        {\r\n          \"text\": \"{\\\"startDate\\\": \\\"2026-11-30\\\", \\\"endDate\\\": \\\"2027-01-10\\\", \\\"goal\\\": \\\"Semi-marathon\\\", \\\"availability\\\": [{\\\"day\\\": \\\"mercredi\\\", \\\"time\\\": \\\"soir\\\", \\\"maxDuration\\\": 45}, {\\\"day\\\": \\\"dimanche\\\", \\\"time\\\": \\\"matin\\\", \\\"maxDuration\\\": 90}], \\\"age\\\": 32, \\\"sessions\\\": [{\\\"date\\\": \\\"2026-10-05\\\", \\\"distance\\\": 9.2, \\\"duration\\\": 60, \\\"speed\\\": 9.2}, {\\\"date\\\": \\\"2026-10-12\\\", \\\"distance\\\": 5.8, \\\"duration\\\": 38, \\\"speed\\\": 9.2}, {\\\"date\\\": \\\"2026-10-19\\\", \\\"distance\\\": 4.4, \\\"duration\\\": 29, \\\"speed\\\": 9.1}, {\\\"date\\\": \\\"2026-10-23\\\", \\\"distance\\\": 6.5, \\\"duration\\\": 42, \\\"speed\\\": 9.3}, {\\\"date\\\": \\\"2026-10-26\\\", \\\"distance\\\": 5.3, \\\"duration\\\": 35, \\\"speed\\\": 9.1}, {\\\"date\\\": \\\"2026-11-02\\\", \\\"distance\\\": 7, \\\"duration\\\": 45, \\\"speed\\\": 9.3}, {\\\"date\\\": \\\"2026-11-09\\\", \\\"distance\\\": 5.5, \\\"duration\\\": 36, \\\"speed\\\": 9.2}, {\\\"date\\\": \\\"2026-11-16\\\", \\\"distance\\\": 4.2, \\\"duration\\\": 28, \\\"speed\\\": 9.0}], \\\"longestDistance\\\": 9.2, \\\"maxWeeklyDistance\\\": 10.9}\"\r\n        }\r\n      ]\r\n    }\r\n  ],\r\n  \"generationConfig\": {\r\n    \"responseFormat\": {\r\n      \"text\": {\r\n        \"mimeType\": \"APPLICATION_JSON\",\r\n        \"schema\": {\r\n          \"type\": \"object\",\r\n          \"properties\": {\r\n            \"message\": {\r\n              \"type\": \"string\",\r\n              \"description\": \"Présentation du plan, en 2 à 4 phrases, en vouvoyant l'utilisateur, avec un avertissement si l'objectif est ambitieux.\"\r\n            },\r\n            \"sessions\": {\r\n              \"type\": \"array\",\r\n              \"description\": \"Les séances du plan, dans l'ordre des dates.\",\r\n              \"items\": {\r\n                \"type\": \"object\",\r\n                \"properties\": {\r\n                  \"date\": {\r\n                    \"type\": \"string\",\r\n                    \"format\": \"date\",\r\n                    \"description\": \"Date de la séance (AAAA-MM-JJ).\"\r\n                  },\r\n                  \"time\": {\r\n                    \"type\": \"string\",\r\n                    \"enum\": [\r\n                      \"matin\",\r\n                      \"midi\",\r\n                      \"après-midi\",\r\n                      \"soir\"\r\n                    ],\r\n                    \"description\": \"Moment de la séance, comme dans les disponibilités.\"\r\n                  },\r\n                  \"distance\": {\r\n                    \"type\": \"number\",\r\n                    \"description\": \"Distance en km.\"\r\n                  },\r\n                  \"duration\": {\r\n                    \"type\": \"integer\",\r\n                    \"description\": \"Durée en minutes.\"\r\n                  },\r\n                  \"description\": {\r\n                    \"type\": \"string\",\r\n                    \"description\": \"Comment aborder la séance et son déroulé, en une ou deux phrases simples, en vouvoyant l'utilisateur.\"\r\n                  }\r\n                },\r\n                \"required\": [\r\n                  \"date\",\r\n                  \"time\",\r\n                  \"distance\",\r\n                  \"duration\",\r\n                  \"description\"\r\n                ]\r\n              }\r\n            },\r\n            \"nutritionTips\": {\r\n              \"type\": \"array\",\r\n              \"description\": \"Conseils alimentaires généraux, en vouvoyant l'utilisateur.\",\r\n              \"items\": {\r\n                \"type\": \"string\"\r\n              },\r\n              \"minItems\": 3,\r\n              \"maxItems\": 5\r\n            }\r\n          },\r\n          \"required\": [\r\n            \"message\",\r\n            \"sessions\",\r\n            \"nutritionTips\"\r\n          ]\r\n        }\r\n      }\r\n    }\r\n  }\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/models/gemini-3.5-flash-lite:generateContent",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "models",
+            "gemini-3.5-flash-lite:generateContent"
+          ]
+        },
+        "description": "Envoie les données d'un utilisateur à l'IA Gemini et récupère un plan d'entraînement personnalisé sur 6 semaines.\n\nCe qu'on envoie :\n\n- system_instruction : les consignes, identiques pour tous les utilisateurs (contexte, tâche, données reçues, règles, format de réponse).\n    \n- contents : les données de l'utilisateur, en JSON : les dates du plan, son objectif, ses disponibilités, son âge, ses séances des 8 dernières semaines (date, distance, durée, vitesse), sa plus longue séance et sa semaine la plus chargée. Aucune donnée personnelle sensible : ni nom, ni poids, ni fréquence cardiaque.\n    \n- generationConfig : la forme attendue de la réponse (un schéma JSON).\n    \n\nCe qu'on reçoit : dans text, un JSON avec un message pour l'utilisateur, la liste des séances (date, moment, distance, durée, conseil) et quelques conseils alimentaires généraux. La forme de la réponse est garantie, mais pas l'exactitude des valeurs.\n\nTests (voir les exemples) : six versions du prompt ont été testées. La version 5 est celle retenue. Le détail est dans le document de préparation (docs/ia-preparation.md)."
+      },
+      "response": [
+        {
+          "name": "V1 - First prompt",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"system_instruction\": {\r\n    \"parts\": [\r\n      {\r\n        \"text\": \"# Contexte\\nTu es un coach de course à pied pour SportSee, une application de suivi sportif.\\nLes utilisateurs sont des coureurs amateurs.\\n\\n# Tâche\\nCrée un plan d'entraînement personnalisé pour aider l'utilisateur à atteindre son objectif.\\n\\n# Données reçues\\nTu reçois un JSON avec :\\n- startDate et endDate : le premier et le dernier jour du plan (AAAA-MM-JJ). Si l'objectif est une course, elle a lieu le jour de endDate.\\n- goal : l'objectif de l'utilisateur.\\n- availability : les jours (day) et moments (time) où il peut courir, avec la durée maximale en minutes (maxDuration).\\n- age : son âge.\\n- sessions : ses séances des 8 dernières semaines, avec la date, la distance (km) et la durée (minutes). Si la liste est vide, considère que c'est un débutant.\\n\\n# Règles\\n- Place les séances uniquement aux jours et moments de availability, entre startDate et endDate.\\n- Ne dépasse jamais maxDuration, sauf pour la course elle-même.\\n- Pars du niveau actuel montré par sessions, augmente l'effort progressivement et allège la dernière semaine avant une course.\\n- Si l'objectif semble trop ambitieux pour ce niveau, propose un plan prudent et explique-le dans message.\\n- Donne seulement des conseils alimentaires généraux : pas de régime, pas de compléments alimentaires. Rappelle de les adapter à ses allergies et à ses habitudes alimentaires.\\n- Ne donne aucun avis médical.\\n- Vouvoie l'utilisateur, avec des phrases simples et un ton encourageant.\\n\\n# Format de réponse\\nRéponds uniquement en JSON, selon le schéma fourni.\\nExemple d'une séance :\\n{\\\"date\\\": \\\"2026-12-02\\\", \\\"time\\\": \\\"soir\\\", \\\"type\\\": \\\"footing\\\", \\\"distance\\\": 5, \\\"duration\\\": 35, \\\"description\\\": \\\"Footing à allure tranquille, en pouvant parler sans être essoufflé.\\\"}\"\r\n      }\r\n    ]\r\n  },\r\n  \"contents\": [\r\n    {\r\n      \"parts\": [\r\n        {\r\n          \"text\": \"{\\\"startDate\\\": \\\"2026-11-30\\\", \\\"endDate\\\": \\\"2027-01-10\\\", \\\"goal\\\": \\\"Semi-marathon (21,1 km)\\\", \\\"availability\\\": [{\\\"day\\\": \\\"mercredi\\\", \\\"time\\\": \\\"soir\\\", \\\"maxDuration\\\": 45}, {\\\"day\\\": \\\"dimanche\\\", \\\"time\\\": \\\"matin\\\", \\\"maxDuration\\\": 90}], \\\"age\\\": 32, \\\"sessions\\\": [{\\\"date\\\": \\\"2026-10-05\\\", \\\"distance\\\": 9.2, \\\"duration\\\": 60}, {\\\"date\\\": \\\"2026-10-12\\\", \\\"distance\\\": 5.8, \\\"duration\\\": 38}, {\\\"date\\\": \\\"2026-10-19\\\", \\\"distance\\\": 4.4, \\\"duration\\\": 29}, {\\\"date\\\": \\\"2026-10-23\\\", \\\"distance\\\": 6.5, \\\"duration\\\": 42}, {\\\"date\\\": \\\"2026-10-26\\\", \\\"distance\\\": 5.3, \\\"duration\\\": 35}, {\\\"date\\\": \\\"2026-11-02\\\", \\\"distance\\\": 7, \\\"duration\\\": 45}, {\\\"date\\\": \\\"2026-11-09\\\", \\\"distance\\\": 5.5, \\\"duration\\\": 36}, {\\\"date\\\": \\\"2026-11-16\\\", \\\"distance\\\": 4.2, \\\"duration\\\": 28}]}\"\r\n        }\r\n      ]\r\n    }\r\n  ],\r\n  \"generationConfig\": {\r\n    \"responseFormat\": {\r\n      \"text\": {\r\n        \"mimeType\": \"APPLICATION_JSON\",\r\n        \"schema\": {\r\n          \"type\": \"object\",\r\n          \"properties\": {\r\n            \"message\": {\r\n              \"type\": \"string\",\r\n              \"description\": \"Présentation du plan pour l'utilisateur, en 2 à 4 phrases, avec un avertissement si l'objectif est ambitieux.\"\r\n            },\r\n            \"sessions\": {\r\n              \"type\": \"array\",\r\n              \"description\": \"Les séances du plan, dans l'ordre des dates.\",\r\n              \"items\": {\r\n                \"type\": \"object\",\r\n                \"properties\": {\r\n                  \"date\": {\r\n                    \"type\": \"string\",\r\n                    \"format\": \"date\",\r\n                    \"description\": \"Date de la séance (AAAA-MM-JJ).\"\r\n                  },\r\n                  \"time\": {\r\n                    \"type\": \"string\",\r\n                    \"enum\": [\r\n                      \"matin\",\r\n                      \"midi\",\r\n                      \"après-midi\",\r\n                      \"soir\"\r\n                    ],\r\n                    \"description\": \"Moment de la séance.\"\r\n                  },\r\n                  \"type\": {\r\n                    \"type\": \"string\",\r\n                    \"enum\": [\r\n                      \"footing\",\r\n                      \"fractionné\",\r\n                      \"sortie longue\",\r\n                      \"course\"\r\n                    ],\r\n                    \"description\": \"Type de séance.\"\r\n                  },\r\n                  \"distance\": {\r\n                    \"type\": \"number\",\r\n                    \"description\": \"Distance en km.\"\r\n                  },\r\n                  \"duration\": {\r\n                    \"type\": \"integer\",\r\n                    \"description\": \"Durée en minutes.\"\r\n                  },\r\n                  \"description\": {\r\n                    \"type\": \"string\",\r\n                    \"description\": \"Déroulé de la séance en une ou deux phrases.\"\r\n                  }\r\n                },\r\n                \"required\": [\r\n                  \"date\",\r\n                  \"time\",\r\n                  \"type\",\r\n                  \"distance\",\r\n                  \"duration\",\r\n                  \"description\"\r\n                ]\r\n              }\r\n            },\r\n            \"nutritionTips\": {\r\n              \"type\": \"array\",\r\n              \"description\": \"Conseils alimentaires généraux.\",\r\n              \"items\": {\r\n                \"type\": \"string\"\r\n              },\r\n              \"minItems\": 3,\r\n              \"maxItems\": 5\r\n            }\r\n          },\r\n          \"required\": [\r\n            \"message\",\r\n            \"sessions\",\r\n            \"nutritionTips\"\r\n          ]\r\n        }\r\n      }\r\n    }\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/models/gemini-3.5-flash-lite:generateContent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "models",
+                "gemini-3.5-flash-lite:generateContent"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"candidates\": [\n        {\n            \"content\": {\n                \"parts\": [\n                    {\n                        \"text\": \"{\\\"message\\\": \\\"Bonjour ! C'est un plaisir de t'accompagner vers ton premier semi-marathon. Ton objectif est un peu ambitieux vu ton niveau récent, mais avec de la régularité et de la progressivité, tu vas y arriver en toute sécurité.\\\", \\\"sessions\\\": [{\\\"date\\\": \\\"2026-12-02\\\", \\\"time\\\": \\\"soir\\\", \\\"type\\\": \\\"footing\\\", \\\"distance\\\": 6.0, \\\"duration\\\": 40, \\\"description\\\": \\\"Footing en endurance fondamentale pour reprendre en douceur.\\\"}, {\\\"date\\\": \\\"2026-12-06\\\", \\\"time\\\": \\\"matin\\\", \\\"type\\\": \\\"sortie longue\\\", \\\"distance\\\": 10.0, \\\"duration\\\": 70, \\\"description\\\": \\\"Sortie longue à allure très modérée pour habituer ton corps.\\\"}, {\\\"date\\\": \\\"2026-12-09\\\", \\\"time\\\": \\\"soir\\\", \\\"type\\\": \\\"fractionné\\\", \\\"distance\\\": 6.0, \\\"duration\\\": 40, \\\"description\\\": \\\"Séance de fractionné court : 5 fois 1 minute vite, 1 minute de marche.\\\"}, {\\\"date\\\": \\\"2026-12-13\\\", \\\"time\\\": \\\"matin\\\", \\\"type\\\": \\\"sortie longue\\\", \\\"distance\\\": 12.0, \\\"duration\\\": 85, \\\"description\\\": \\\"Sortie longue en conservant une allure conversationnelle.\\\"}, {\\\"date\\\": \\\"2026-12-16\\\", \\\"time\\\": \\\"soir\\\", \\\"type\\\": \\\"footing\\\", \\\"distance\\\": 6.5, \\\"duration\\\": 45, \\\"description\\\": \\\"Footing de récupération avec des sensations faciles.\\\"}, {\\\"date\\\": \\\"2026-12-20\\\", \\\"time\\\": \\\"matin\\\", \\\"type\\\": \\\"sortie longue\\\", \\\"distance\\\": 14.0, \\\"duration\\\": 90, \\\"description\\\": \\\"Sortie longue progressive, bois régulièrement par petites gorgées.\\\"}, {\\\"date\\\": \\\"2026-12-23\\\", \\\"time\\\": \\\"soir\\\", \\\"type\\\": \\\"fractionné\\\", \\\"distance\\\": 6.5, \\\"duration\\\": 45, \\\"description\\\": \\\"Fractionné moyen : 4 fois 3 minutes allure semi, 2 minutes de trot.\\\"}, {\\\"date\\\": \\\"2026-12-27\\\", \\\"time\\\": \\\"matin\\\", \\\"type\\\": \\\"sortie longue\\\", \\\"distance\\\": 16.0, \\\"duration\\\": 90, \\\"description\\\": \\\"Sortie longue pour valider ton endurance, gère bien ton souffle.\\\"}, {\\\"date\\\": \\\"2026-12-30\\\", \\\"time\\\": \\\"soir\\\", \\\"type\\\": \\\"footing\\\", \\\"distance\\\": 6.0, \\\"duration\\\": 40, \\\"description\\\": \\\"Footing léger pour évacuer les toxines.\\\"}, {\\\"date\\\": \\\"2027-01-03\\\", \\\"time\\\": \\\"matin\\\", \\\"type\\\": \\\"sortie longue\\\", \\\"distance\\\": 12.0, \\\"duration\\\": 75, \\\"description\\\": \\\"Dernière sortie longue avant la baisse de charge, garde du jus.\\\"}, {\\\"date\\\": \\\"2027-01-06\\\", \\\"time\\\": \\\"soir\\\", \\\"type\\\": \\\"footing\\\", \\\"distance\\\": 4.5, \\\"duration\\\": 30, \\\"description\\\": \\\"Court footing de décrassage, tout en aisance.\\\"}, {\\\"date\\\": \\\"2027-01-10\\\", \\\"time\\\": \\\"matin\\\", \\\"type\\\": \\\"course\\\", \\\"distance\\\": 21.1, \\\"duration\\\": 140, \\\"description\\\": \\\"Jour J ! Objectif semi-marathon : pars prudemment et profite de la course.\\\"}], \\\"nutritionTips\\\": [\\\"Pense à bien t'hydrater au quotidien en buvant de l'eau régulièrement.\\\", \\\"Privilégie des repas riches en glucides lents les jours précédant tes sorties longues.\\\", \\\"Évite de tester de nouveaux aliments le jour de ta course pour ne pas perturber ta digestion.\\\", \\\"Adapte ces conseils généraux selon tes propres habitudes alimentaires et tes éventuelles allergies.\\\"]}\",\n                        \"thoughtSignature\": \"EpYBCpMBAWkUfROTEmS9wMWyAJihuhkwcxx4UH49IaOPVt50fl3WrX7ocbep2UXplkg4WaLCcIvnbWb74i3O7WOJXJsunY38IVuZiREmfHpCdwYESCsucu6V3lNchE7ZJdWhhw+2anwrNMHVdHt3iZlattrV4jae1aaIJI3DEr6fKzypC3ZJ4rgMt7f5m2MREBUwQNI8Qloz\"\n                    }\n                ],\n                \"role\": \"model\"\n            },\n            \"finishReason\": \"STOP\",\n            \"index\": 0\n        }\n    ],\n    \"usageMetadata\": {\n        \"promptTokenCount\": 770,\n        \"candidatesTokenCount\": 891,\n        \"totalTokenCount\": 1661,\n        \"promptTokensDetails\": [\n            {\n                \"modality\": \"TEXT\",\n                \"tokenCount\": 770\n            }\n        ],\n        \"serviceTier\": \"standard\"\n    },\n    \"modelVersion\": \"gemini-3.5-flash-lite\",\n    \"responseId\": \"T18Ha8nZM76okdUP97PCwAs\"\n}"
+        },
+        {
+          "name": "V2 - Stricter rules",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"system_instruction\": {\r\n    \"parts\": [\r\n      {\r\n        \"text\": \"# Contexte\\nTu es un coach de course à pied pour SportSee, une application de suivi sportif.\\nLes utilisateurs sont des coureurs amateurs.\\n\\n# Tâche\\nCrée un plan d'entraînement personnalisé pour aider l'utilisateur à atteindre son objectif.\\n\\n# Données reçues\\nTu reçois un JSON avec :\\n- startDate et endDate : le premier et le dernier jour du plan (AAAA-MM-JJ). Si l'objectif est une course, elle a lieu le jour de endDate.\\n- goal : l'objectif de l'utilisateur.\\n- availability : les jours (day) et moments (time) où il peut courir, avec la durée maximale en minutes (maxDuration).\\n- age : son âge.\\n- sessions : ses séances des 8 dernières semaines, avec la date, la distance (km) et la durée (minutes). Si la liste est vide, considère que c'est un débutant.\\n\\n# Règles\\n- Place les séances uniquement aux jours et moments de availability, entre startDate et endDate.\\n- Ne dépasse jamais maxDuration, sauf pour la course elle-même.\\n- La sécurité passe avant l'objectif.\\n- Au début, ne lui demande pas plus que ce qu'il a déjà fait ces 8 dernières semaines : pas de séance plus longue que sa plus longue séance, pas de semaine plus chargée que sa semaine la plus chargée. Ensuite, augmente petit à petit. Allège la dernière semaine avant une course.\\n- Garde une vitesse moyenne proche de celle de ses séances passées. Seules les parties rapides du fractionné peuvent être plus rapides.\\n- Si l'objectif n'est pas atteignable sans risque, garde quand même une progression prudente, adapte la course (par exemple en alternant course et marche) et explique-le dans message.\\n- Ne promets aucun résultat et n'invente aucune information absente des données.\\n- Donne seulement des conseils alimentaires généraux : pas de régime, pas de compléments alimentaires. Rappelle de les adapter à ses allergies et à ses habitudes alimentaires.\\n- Ne donne aucun avis médical.\\n- Vouvoie toujours l'utilisateur, jamais de tutoiement. Utilise des mots simples, sans jargon de coureur, avec un ton encourageant.\\n\\n# Format de réponse\\nRéponds uniquement en JSON, selon le schéma fourni.\\nExemple d'une séance :\\n{\\\"date\\\": \\\"2026-12-02\\\", \\\"time\\\": \\\"soir\\\", \\\"type\\\": \\\"footing\\\", \\\"distance\\\": 5, \\\"duration\\\": 35, \\\"description\\\": \\\"Footing à allure tranquille, en pouvant parler sans être essoufflé.\\\"}\"\r\n      }\r\n    ]\r\n  },\r\n  \"contents\": [\r\n    {\r\n      \"parts\": [\r\n        {\r\n          \"text\": \"{\\\"startDate\\\": \\\"2026-11-30\\\", \\\"endDate\\\": \\\"2027-01-10\\\", \\\"goal\\\": \\\"Semi-marathon (21,1 km)\\\", \\\"availability\\\": [{\\\"day\\\": \\\"mercredi\\\", \\\"time\\\": \\\"soir\\\", \\\"maxDuration\\\": 45}, {\\\"day\\\": \\\"dimanche\\\", \\\"time\\\": \\\"matin\\\", \\\"maxDuration\\\": 90}], \\\"age\\\": 32, \\\"sessions\\\": [{\\\"date\\\": \\\"2026-10-05\\\", \\\"distance\\\": 9.2, \\\"duration\\\": 60}, {\\\"date\\\": \\\"2026-10-12\\\", \\\"distance\\\": 5.8, \\\"duration\\\": 38}, {\\\"date\\\": \\\"2026-10-19\\\", \\\"distance\\\": 4.4, \\\"duration\\\": 29}, {\\\"date\\\": \\\"2026-10-23\\\", \\\"distance\\\": 6.5, \\\"duration\\\": 42}, {\\\"date\\\": \\\"2026-10-26\\\", \\\"distance\\\": 5.3, \\\"duration\\\": 35}, {\\\"date\\\": \\\"2026-11-02\\\", \\\"distance\\\": 7, \\\"duration\\\": 45}, {\\\"date\\\": \\\"2026-11-09\\\", \\\"distance\\\": 5.5, \\\"duration\\\": 36}, {\\\"date\\\": \\\"2026-11-16\\\", \\\"distance\\\": 4.2, \\\"duration\\\": 28}]}\"\r\n        }\r\n      ]\r\n    }\r\n  ],\r\n  \"generationConfig\": {\r\n    \"responseFormat\": {\r\n      \"text\": {\r\n        \"mimeType\": \"APPLICATION_JSON\",\r\n        \"schema\": {\r\n          \"type\": \"object\",\r\n          \"properties\": {\r\n            \"message\": {\r\n              \"type\": \"string\",\r\n              \"description\": \"Présentation du plan pour l'utilisateur, en 2 à 4 phrases, en le vouvoyant, avec un avertissement si l'objectif est ambitieux.\"\r\n            },\r\n            \"sessions\": {\r\n              \"type\": \"array\",\r\n              \"description\": \"Les séances du plan, dans l'ordre des dates.\",\r\n              \"items\": {\r\n                \"type\": \"object\",\r\n                \"properties\": {\r\n                  \"date\": {\r\n                    \"type\": \"string\",\r\n                    \"format\": \"date\",\r\n                    \"description\": \"Date de la séance (AAAA-MM-JJ).\"\r\n                  },\r\n                  \"time\": {\r\n                    \"type\": \"string\",\r\n                    \"enum\": [\r\n                      \"matin\",\r\n                      \"midi\",\r\n                      \"après-midi\",\r\n                      \"soir\"\r\n                    ],\r\n                    \"description\": \"Moment de la séance.\"\r\n                  },\r\n                  \"type\": {\r\n                    \"type\": \"string\",\r\n                    \"enum\": [\r\n                      \"footing\",\r\n                      \"fractionné\",\r\n                      \"sortie longue\",\r\n                      \"course\"\r\n                    ],\r\n                    \"description\": \"Type de séance.\"\r\n                  },\r\n                  \"distance\": {\r\n                    \"type\": \"number\",\r\n                    \"description\": \"Distance en km.\"\r\n                  },\r\n                  \"duration\": {\r\n                    \"type\": \"integer\",\r\n                    \"description\": \"Durée en minutes.\"\r\n                  },\r\n                  \"description\": {\r\n                    \"type\": \"string\",\r\n                    \"description\": \"Déroulé complet de la séance (échauffement, partie principale, retour au calme), en une ou deux phrases simples, en vouvoyant l'utilisateur.\"\r\n                  }\r\n                },\r\n                \"required\": [\r\n                  \"date\",\r\n                  \"time\",\r\n                  \"type\",\r\n                  \"distance\",\r\n                  \"duration\",\r\n                  \"description\"\r\n                ]\r\n              }\r\n            },\r\n            \"nutritionTips\": {\r\n              \"type\": \"array\",\r\n              \"description\": \"Conseils alimentaires généraux, en vouvoyant l'utilisateur.\",\r\n              \"items\": {\r\n                \"type\": \"string\"\r\n              },\r\n              \"minItems\": 3,\r\n              \"maxItems\": 5\r\n            }\r\n          },\r\n          \"required\": [\r\n            \"message\",\r\n            \"sessions\",\r\n            \"nutritionTips\"\r\n          ]\r\n        }\r\n      }\r\n    }\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/models/gemini-3.5-flash-lite:generateContent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "models",
+                "gemini-3.5-flash-lite:generateContent"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"candidates\": [\n        {\n            \"content\": {\n                \"parts\": [\n                    {\n                        \"text\": \"{\\\"message\\\": \\\"Bonjour, voici votre plan d'entrainement prepare sur mesure pour atteindre votre objectif de semi-marathon. Compte tenu de votre historique recent, l'objectif est ambitieux mais nous progresserons prudemment et alleguerons la derniere semaine avant la course. Pensez a ecouter votre corps et a adapter l'effort selon votre forme du moment.\\\", \\\"sessions\\\": [{\\\"date\\\": \\\"2026-12-02\\\", \\\"time\\\": \\\"soir\\\", \\\"type\\\": \\\"footing\\\", \\\"distance\\\": 5.0, \\\"duration\\\": 35, \\\"description\\\": \\\"Realisez un footing a allure reguliere et tranquille, en prenant le temps de bien souffler.\\\"}, {\\\"date\\\": \\\"2026-12-06\\\", \\\"time\\\": \\\"matin\\\", \\\"type\\\": \\\"sortie longue\\\", \\\"distance\\\": 7.5, \\\"duration\\\": 50, \\\"description\\\": \\\"Effectuez une sortie longue a allure moderee et constante pour developper votre endurance de base.\\\"}, {\\\"date\\\": \\\"2026-12-09\\\", \\\"time\\\": \\\"soir\\\", \\\"type\\\": \\\"footing\\\", \\\"distance\\\": 5.5, \\\"duration\\\": 38, \\\"description\\\": \\\"Courrez a un rythme confortable qui vous permet de discuter sans etre essouffle.\\\"}, {\\\"date\\\": \\\"2026-12-13\\\", \\\"time\\\": \\\"matin\\\", \\\"type\\\": \\\"sortie longue\\\", \\\"distance\\\": 9.0, \\\"duration\\\": 60, \\\"description\\\": \\\"Partez pour une sortie longue en veillant a bien gerer votre effort du debut a la fin.\\\"}, {\\\"date\\\": \\\"2026-12-16\\\", \\\"time\\\": \\\"soir\\\", \\\"type\\\": \\\"footing\\\", \\\"distance\\\": 6.0, \\\"duration\\\": 40, \\\"description\\\": \\\"Faites une seance de course souple pour recuperer et maintenir vos bonnes sensations.\\\"}, {\\\"date\\\": \\\"2026-12-20\\\", \\\"time\\\": \\\"matin\\\", \\\"type\\\": \\\"sortie longue\\\", \\\"distance\\\": 11.0, \\\"duration\\\": 75, \\\"description\\\": \\\"Augmentez progressivement la distance de votre sortie longue tout en gardant une allure tres accessible.\\\"}, {\\\"date\\\": \\\"2026-12-23\\\", \\\"time\\\": \\\"soir\\\", \\\"type\\\": \\\"footing\\\", \\\"distance\\\": 6.0, \\\"duration\\\": 40, \\\"description\\\": \\\"Profitez de ce footing pour courir detendu et relacher les tensions de la semaine.\\\"}, {\\\"date\\\": \\\"2026-12-27\\\", \\\"time\\\": \\\"matin\\\", \\\"type\\\": \\\"sortie longue\\\", \\\"distance\\\": 13.0, \\\"duration\\\": 85, \\\"description\\\": \\\"Realisez votre plus longue sortie de la preparation avec un ravitaillement en eau adapte si besoin.\\\"}, {\\\"date\\\": \\\"2026-12-30\\\", \\\"time\\\": \\\"soir\\\", \\\"type\\\": \\\"footing\\\", \\\"distance\\\": 5.0, \\\"duration\\\": 35, \\\"description\\\": \\\"Consacrez ce creneau a un footing leger pour bien recuperer de la sortie precedente.\\\"}, {\\\"date\\\": \\\"2027-01-03\\\", \\\"time\\\": \\\"matin\\\", \\\"type\\\": \\\"sortie longue\\\", \\\"distance\\\": 10.0, \\\"duration\\\": 65, \\\"description\\\": \\\"Realisez une derniere sortie longue intermediaire avant la phase d'allegement.\\\"}, {\\\"date\\\": \\\"2027-01-06\\\", \\\"time\\\": \\\"soir\\\", \\\"type\\\": \\\"footing\\\", \\\"distance\\\": 4.0, \\\"duration\\\": 30, \\\"description\\\": \\\"Faites un court footing de transition pour garder de l'activite sans vous fatiguer.\\\"}, {\\\"date\\\": \\\"2027-01-10\\\", \\\"time\\\": \\\"matin\\\", \\\"type\\\": \\\"course\\\", \\\"distance\\\": 21.1, \\\"duration\\\": 140, \\\"description\\\": \\\"Jour J du semi-marathon : partez prudemment, ecoutez vos sensations et alternez course et marche si necessaire.\\\"}], \\\"nutritionTips\\\": [\\\"Pensez a bien vous hydrater regulierement avec de l'eau tout au long de la semaine, sans attendre d'avoirsoif.\\\", \\\"Privilegiez des repas simples et equilibres riches en feculents la veille de vos sorties longues pour faire le plein d'energie.\\\", \\\"Evitez d'essayer de nouveaux aliments ou de nouveaux plats les jours precedant vos seances importantes ou la course.\\\", \\\"Adaptez ces conseils alimentaires a vos habitudes personnelles ainsi qu'a d'eventuelles allergies ou intolerances.\\\"]}\",\n                        \"thoughtSignature\": \"EpYBCpMBAWkUfRM5h3qwv/WjuZasDtVw/fI/dXwYJSwTc7BH2n32o2BbePbjU57QXfPXlKEP/tthdslddJoBIMeskapCJCEPy8QaKO0Df7NcEdXfdKnd/6h7Zqyus/681Du8/SO/+6xv8Ro6i4i4cJ01bmFLoNeuMiJ42VzTs8cu7+dbRDNxxJ4xe8AtGQRXg0C1UBwAgTHw\"\n                    }\n                ],\n                \"role\": \"model\"\n            },\n            \"finishReason\": \"STOP\",\n            \"index\": 0\n        }\n    ],\n    \"usageMetadata\": {\n        \"promptTokenCount\": 901,\n        \"candidatesTokenCount\": 1009,\n        \"totalTokenCount\": 1910,\n        \"promptTokensDetails\": [\n            {\n                \"modality\": \"TEXT\",\n                \"tokenCount\": 901\n            }\n        ],\n        \"serviceTier\": \"standard\"\n    },\n    \"modelVersion\": \"gemini-3.5-flash-lite\",\n    \"responseId\": \"PzgIa8nHKefzvdIP4MKzeQ\"\n}"
+        },
+        {
+          "name": "V2 - Same prompt, second try",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"system_instruction\": {\r\n    \"parts\": [\r\n      {\r\n        \"text\": \"# Contexte\\nTu es un coach de course à pied pour SportSee, une application de suivi sportif.\\nLes utilisateurs sont des coureurs amateurs.\\n\\n# Tâche\\nCrée un plan d'entraînement personnalisé pour aider l'utilisateur à atteindre son objectif.\\n\\n# Données reçues\\nTu reçois un JSON avec :\\n- startDate et endDate : le premier et le dernier jour du plan (AAAA-MM-JJ). Si l'objectif est une course, elle a lieu le jour de endDate.\\n- goal : l'objectif de l'utilisateur.\\n- availability : les jours (day) et moments (time) où il peut courir, avec la durée maximale en minutes (maxDuration).\\n- age : son âge.\\n- sessions : ses séances des 8 dernières semaines, avec la date, la distance (km) et la durée (minutes). Si la liste est vide, considère que c'est un débutant.\\n\\n# Règles\\n- Place les séances uniquement aux jours et moments de availability, entre startDate et endDate.\\n- Ne dépasse jamais maxDuration, sauf pour la course elle-même.\\n- La sécurité passe avant l'objectif.\\n- Au début, ne lui demande pas plus que ce qu'il a déjà fait ces 8 dernières semaines : pas de séance plus longue que sa plus longue séance, pas de semaine plus chargée que sa semaine la plus chargée. Ensuite, augmente petit à petit. Allège la dernière semaine avant une course.\\n- Garde une vitesse moyenne proche de celle de ses séances passées. Seules les parties rapides du fractionné peuvent être plus rapides.\\n- Si l'objectif n'est pas atteignable sans risque, garde quand même une progression prudente, adapte la course (par exemple en alternant course et marche) et explique-le dans message.\\n- Ne promets aucun résultat et n'invente aucune information absente des données.\\n- Donne seulement des conseils alimentaires généraux : pas de régime, pas de compléments alimentaires. Rappelle de les adapter à ses allergies et à ses habitudes alimentaires.\\n- Ne donne aucun avis médical.\\n- Vouvoie toujours l'utilisateur, jamais de tutoiement. Utilise des mots simples, sans jargon de coureur, avec un ton encourageant.\\n\\n# Format de réponse\\nRéponds uniquement en JSON, selon le schéma fourni.\\nExemple d'une séance :\\n{\\\"date\\\": \\\"2026-12-02\\\", \\\"time\\\": \\\"soir\\\", \\\"type\\\": \\\"footing\\\", \\\"distance\\\": 5, \\\"duration\\\": 35, \\\"description\\\": \\\"Footing à allure tranquille, en pouvant parler sans être essoufflé.\\\"}\"\r\n      }\r\n    ]\r\n  },\r\n  \"contents\": [\r\n    {\r\n      \"parts\": [\r\n        {\r\n          \"text\": \"{\\\"startDate\\\": \\\"2026-11-30\\\", \\\"endDate\\\": \\\"2027-01-10\\\", \\\"goal\\\": \\\"Semi-marathon (21,1 km)\\\", \\\"availability\\\": [{\\\"day\\\": \\\"mercredi\\\", \\\"time\\\": \\\"soir\\\", \\\"maxDuration\\\": 45}, {\\\"day\\\": \\\"dimanche\\\", \\\"time\\\": \\\"matin\\\", \\\"maxDuration\\\": 90}], \\\"age\\\": 32, \\\"sessions\\\": [{\\\"date\\\": \\\"2026-10-05\\\", \\\"distance\\\": 9.2, \\\"duration\\\": 60}, {\\\"date\\\": \\\"2026-10-12\\\", \\\"distance\\\": 5.8, \\\"duration\\\": 38}, {\\\"date\\\": \\\"2026-10-19\\\", \\\"distance\\\": 4.4, \\\"duration\\\": 29}, {\\\"date\\\": \\\"2026-10-23\\\", \\\"distance\\\": 6.5, \\\"duration\\\": 42}, {\\\"date\\\": \\\"2026-10-26\\\", \\\"distance\\\": 5.3, \\\"duration\\\": 35}, {\\\"date\\\": \\\"2026-11-02\\\", \\\"distance\\\": 7, \\\"duration\\\": 45}, {\\\"date\\\": \\\"2026-11-09\\\", \\\"distance\\\": 5.5, \\\"duration\\\": 36}, {\\\"date\\\": \\\"2026-11-16\\\", \\\"distance\\\": 4.2, \\\"duration\\\": 28}]}\"\r\n        }\r\n      ]\r\n    }\r\n  ],\r\n  \"generationConfig\": {\r\n    \"responseFormat\": {\r\n      \"text\": {\r\n        \"mimeType\": \"APPLICATION_JSON\",\r\n        \"schema\": {\r\n          \"type\": \"object\",\r\n          \"properties\": {\r\n            \"message\": {\r\n              \"type\": \"string\",\r\n              \"description\": \"Présentation du plan pour l'utilisateur, en 2 à 4 phrases, en le vouvoyant, avec un avertissement si l'objectif est ambitieux.\"\r\n            },\r\n            \"sessions\": {\r\n              \"type\": \"array\",\r\n              \"description\": \"Les séances du plan, dans l'ordre des dates.\",\r\n              \"items\": {\r\n                \"type\": \"object\",\r\n                \"properties\": {\r\n                  \"date\": {\r\n                    \"type\": \"string\",\r\n                    \"format\": \"date\",\r\n                    \"description\": \"Date de la séance (AAAA-MM-JJ).\"\r\n                  },\r\n                  \"time\": {\r\n                    \"type\": \"string\",\r\n                    \"enum\": [\r\n                      \"matin\",\r\n                      \"midi\",\r\n                      \"après-midi\",\r\n                      \"soir\"\r\n                    ],\r\n                    \"description\": \"Moment de la séance.\"\r\n                  },\r\n                  \"type\": {\r\n                    \"type\": \"string\",\r\n                    \"enum\": [\r\n                      \"footing\",\r\n                      \"fractionné\",\r\n                      \"sortie longue\",\r\n                      \"course\"\r\n                    ],\r\n                    \"description\": \"Type de séance.\"\r\n                  },\r\n                  \"distance\": {\r\n                    \"type\": \"number\",\r\n                    \"description\": \"Distance en km.\"\r\n                  },\r\n                  \"duration\": {\r\n                    \"type\": \"integer\",\r\n                    \"description\": \"Durée en minutes.\"\r\n                  },\r\n                  \"description\": {\r\n                    \"type\": \"string\",\r\n                    \"description\": \"Déroulé complet de la séance (échauffement, partie principale, retour au calme), en une ou deux phrases simples, en vouvoyant l'utilisateur.\"\r\n                  }\r\n                },\r\n                \"required\": [\r\n                  \"date\",\r\n                  \"time\",\r\n                  \"type\",\r\n                  \"distance\",\r\n                  \"duration\",\r\n                  \"description\"\r\n                ]\r\n              }\r\n            },\r\n            \"nutritionTips\": {\r\n              \"type\": \"array\",\r\n              \"description\": \"Conseils alimentaires généraux, en vouvoyant l'utilisateur.\",\r\n              \"items\": {\r\n                \"type\": \"string\"\r\n              },\r\n              \"minItems\": 3,\r\n              \"maxItems\": 5\r\n            }\r\n          },\r\n          \"required\": [\r\n            \"message\",\r\n            \"sessions\",\r\n            \"nutritionTips\"\r\n          ]\r\n        }\r\n      }\r\n    }\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/models/gemini-3.5-flash-lite:generateContent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "models",
+                "gemini-3.5-flash-lite:generateContent"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": ":status",
+              "value": "200"
+            },
+            {
+              "key": "x-gemini-service-tier",
+              "value": "standard"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=UTF-8"
+            },
+            {
+              "key": "vary",
+              "value": "Origin, X-Origin, Referer"
+            },
+            {
+              "key": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "key": "date",
+              "value": "Thu, 26 Nov 2026 13:57:45 GMT"
+            },
+            {
+              "key": "server",
+              "value": "scaffolding on HTTPServer2"
+            },
+            {
+              "key": "content-length",
+              "value": "1671"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "server-timing",
+              "value": "gfet4t7; dur=5972"
+            },
+            {
+              "key": "alt-svc",
+              "value": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"candidates\": [\n    {\n      \"content\": {\n        \"parts\": [\n          {\n            \"text\": \"{\\\"message\\\": \\\"Voici votre plan d'entraînement personnalisé pour vous préparer progressivement jusqu'au semi-marathon du 10 janvier 2027. Votre objectif est ambitieux au vu de votre historique récent, c'est pourquoi nous allons augmenter les distances avec prudence pour éviter les blessures. Pensez à écouter votre corps à chaque étape de votre progression.\\\", \\\"sessions\\\": [{\\\"date\\\": \\\"2026-12-02\\\", \\\"time\\\": \\\"soir\\\", \\\"type\\\": \\\"footing\\\", \\\"distance\\\": 5.0, \\\"duration\\\": 33, \\\"description\\\": \\\"Commencez par marcher un peu, puis courez à allure tranquille sans vous essouffler.\\\"}, {\\\"date\\\": \\\"2026-12-06\\\", \\\"time\\\": \\\"matin\\\", \\\"type\\\": \\\"sortie longue\\\", \\\"distance\\\": 7.5, \\\"duration\\\": 50, \\\"description\\\": \\\"Effectuez une sortie longue à un rythme régulier et confortable, en gardant des forces.\\\"}, {\\\"date\\\": \\\"2026-12-09\\\", \\\"time\\\": \\\"soir\\\", \\\"type\\\": \\\"footing\\\", \\\"distance\\\": 5.5, \\\"duration\\\": 36, \\\"description\\\": \\\"Courrez à une allure souple et détendue du début à la fin.\\\"}, {\\\"date\\\": \\\"2026-12-13\\\", \\\"time\\\": \\\"matin\\\", \\\"type\\\": \\\"sortie longue\\\", \\\"distance\\\": 9.0, \\\"duration\\\": 60, \\\"description\\\": \\\"Maintenez une allure constante et prenez le temps de bien respirer.\\\"}, {\\\"date\\\": \\\"2026-12-16\\\", \\\"time\\\": \\\"soir\\\", \\\"type\\\": \\\"fractionné\\\", \\\"distance\\\": 6.0, \\\"duration\\\": 40, \\\"description\\\": \\\"Alternez trois minutes de course un peu plus rapide et deux minutes de marche, plusieurs fois.\\\"}, {\\\"date\\\": \\\"2026-12-20\\\", \\\"time\\\": \\\"matin\\\", \\\"type\\\": \\\"sortie longue\\\", \\\"distance\\\": 11.0, \\\"duration\\\": 75, \\\"description\\\": \\\"Parcourez cette distance à votre rythme habituel en privilégiant l'endurance.\\\"}, {\\\"date\\\": \\\"2026-12-23\\\", \\\"time\\\": \\\"soir\\\", \\\"type\\\": \\\"footing\\\", \\\"distance\\\": 6.0, \\\"duration\\\": 40, \\\"description\\\": \\\"Faites un footing léger pour récupérer de la séance précédente.\\\"}, {\\\"date\\\": \\\"2026-12-27\\\", \\\"time\\\": \\\"matin\\\", \\\"type\\\": \\\"sortie longue\\\", \\\"distance\\\": 13.0, \\\"duration\\\": 85, \\\"description\\\": \\\"Gérez votre effort sur la durée pour tenir cette distance sans vous épuiser.\\\"}, {\\\"date\\\": \\\"2026-12-30\\\", \\\"time\\\": \\\"soir\\\", \\\"type\\\": \\\"footing\\\", \\\"distance\\\": 5.0, \\\"duration\\\": 33, \\\"description\\\": \\\"Footing court et facile pour garder le corps en mouvement.\\\"}, {\\\"date\\\": \\\"2027-01-03\\\", \\\"time\\\": \\\"matin\\\", \\\"type\\\": \\\"sortie longue\\\", \\\"distance\\\": 10.0, \\\"duration\\\": 65, \\\"description\\\": \\\"Dernière sortie longue avant la course, gardez une allure très confortable.\\\"}, {\\\"date\\\": \\\"2027-01-06\\\", \\\"time\\\": \\\"soir\\\", \\\"type\\\": \\\"footing\\\", \\\"distance\\\": 4.0, \\\"duration\\\": 26, \\\"description\\\": \\\"Petit footing de décrassage pour préparer la fin de semaine.\\\"}, {\\\"date\\\": \\\"2027-01-10\\\", \\\"time\\\": \\\"matin\\\", \\\"type\\\": \\\"course\\\", \\\"distance\\\": 21.1, \\\"duration\\\": 150, \\\"description\\\": \\\"Le jour J, partez prudemment en alternant course et marche si nécessaire pour terminer le parcours.\\\"}], \\\"nutritionTips\\\": [\\\"Pensez à boire de l'eau régulièrement tout au long de la journée, même en dehors des heures de course.\\\", \\\"Privilégiez des repas équilibrés avec des féculents pour faire le plein d'énergie avant vos sorties.\\\", \\\"Consommez un repas léger au moins deux heures avant de courir pour faciliter votre digestion.\\\", \\\"Adaptez ces conseils alimentaires à vos habitudes personnelles et à vos éventuelles allergies.\\\"]}\",\n            \"thoughtSignature\": \"EpYBCpMBAWkUfRPp9/mhtbE5sv92B6ror+Gs27QjAxjkm+Qs8vCN9qL0GdRjECcLb52IN0Rstnoo/PtvtFR9eijJ8OTXO6EQUiKPcsELBUMP/RcPPjM8Tr7rUw0/Wvgkhhfghk6aWjHddvh6ALjOQNN1Z6c2n6qIqgZP4fTPBSI7Zcn/oAfVxDzgQeiDUzxwc2GhBmX2Qbsk\"\n          }\n        ],\n        \"role\": \"model\"\n      },\n      \"finishReason\": \"STOP\",\n      \"index\": 0\n    }\n  ],\n  \"usageMetadata\": {\n    \"promptTokenCount\": 901,\n    \"candidatesTokenCount\": 948,\n    \"totalTokenCount\": 1849,\n    \"promptTokensDetails\": [\n      {\n        \"modality\": \"TEXT\",\n        \"tokenCount\": 901\n      }\n    ],\n    \"serviceTier\": \"standard\"\n  },\n  \"modelVersion\": \"gemini-3.5-flash-lite\",\n  \"responseId\": \"0zoIa-WZGPLaxs0P2Y6H8AM\"\n}"
+        },
+        {
+          "name": "V3 - Simplified",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"system_instruction\": {\r\n    \"parts\": [\r\n      {\r\n        \"text\": \"# Contexte\\nTu es un coach de course à pied pour SportSee, une application de suivi sportif.\\nLes utilisateurs sont des coureurs amateurs.\\n\\n# Tâche\\nCrée un plan d'entraînement personnalisé pour aider l'utilisateur à atteindre son objectif.\\n\\n# Données reçues\\nTu reçois un JSON avec :\\n- startDate et endDate : le premier et le dernier jour du plan (AAAA-MM-JJ). Si l'objectif est une course, elle a lieu le jour de endDate.\\n- goal : l'objectif de l'utilisateur.\\n- availability : les jours (day) et moments (time) où il peut courir, avec la durée maximale en minutes (maxDuration).\\n- age : son âge.\\n- sessions : ses séances des 8 dernières semaines, avec la date, la distance (km), la durée (minutes) et la vitesse moyenne (km/h). Si la liste est vide, considère que c'est un débutant.\\n\\n# Règles\\n- Place les séances uniquement aux jours et moments de availability, entre startDate et endDate.\\n- Ne dépasse jamais maxDuration, sauf pour la course elle-même.\\n- La sécurité passe avant l'objectif : pars de ce qu'il a déjà fait ces 8 dernières semaines et augmente petit à petit.\\n- Garde une vitesse proche de celle de ses séances passées. Tu peux l'augmenter légèrement, petit à petit.\\n- Si l'objectif n'est pas atteignable sans risque, dis-le clairement dans message.\\n- Ne promets aucun résultat et n'invente aucune information absente des données.\\n- Donne seulement des conseils alimentaires généraux : pas de régime, pas de compléments alimentaires. Rappelle de les adapter à ses allergies et à ses habitudes alimentaires.\\n- Ne donne aucun avis médical.\\n- Vouvoie toujours l'utilisateur. Écris en français correct, avec des mots simples et un ton encourageant.\\n\\n# Format de réponse\\nRéponds uniquement en JSON, selon le schéma fourni.\\nExemple d'une séance :\\n{\\\"date\\\": \\\"2026-12-02\\\", \\\"time\\\": \\\"soir\\\", \\\"distance\\\": 5, \\\"duration\\\": 35, \\\"description\\\": \\\"Commencez doucement, puis courez à votre rythme habituel, sans forcer.\\\"}\"\r\n      }\r\n    ]\r\n  },\r\n  \"contents\": [\r\n    {\r\n      \"parts\": [\r\n        {\r\n          \"text\": \"{\\\"startDate\\\": \\\"2026-11-30\\\", \\\"endDate\\\": \\\"2027-01-10\\\", \\\"goal\\\": \\\"Semi-marathon\\\", \\\"availability\\\": [{\\\"day\\\": \\\"mercredi\\\", \\\"time\\\": \\\"soir\\\", \\\"maxDuration\\\": 45}, {\\\"day\\\": \\\"dimanche\\\", \\\"time\\\": \\\"matin\\\", \\\"maxDuration\\\": 90}], \\\"age\\\": 32, \\\"sessions\\\": [{\\\"date\\\": \\\"2026-10-05\\\", \\\"distance\\\": 9.2, \\\"duration\\\": 60, \\\"speed\\\": 9.2}, {\\\"date\\\": \\\"2026-10-12\\\", \\\"distance\\\": 5.8, \\\"duration\\\": 38, \\\"speed\\\": 9.2}, {\\\"date\\\": \\\"2026-10-19\\\", \\\"distance\\\": 4.4, \\\"duration\\\": 29, \\\"speed\\\": 9.1}, {\\\"date\\\": \\\"2026-10-23\\\", \\\"distance\\\": 6.5, \\\"duration\\\": 42, \\\"speed\\\": 9.3}, {\\\"date\\\": \\\"2026-10-26\\\", \\\"distance\\\": 5.3, \\\"duration\\\": 35, \\\"speed\\\": 9.1}, {\\\"date\\\": \\\"2026-11-02\\\", \\\"distance\\\": 7, \\\"duration\\\": 45, \\\"speed\\\": 9.3}, {\\\"date\\\": \\\"2026-11-09\\\", \\\"distance\\\": 5.5, \\\"duration\\\": 36, \\\"speed\\\": 9.2}, {\\\"date\\\": \\\"2026-11-16\\\", \\\"distance\\\": 4.2, \\\"duration\\\": 28, \\\"speed\\\": 9.0}]}\"\r\n        }\r\n      ]\r\n    }\r\n  ],\r\n  \"generationConfig\": {\r\n    \"responseFormat\": {\r\n      \"text\": {\r\n        \"mimeType\": \"APPLICATION_JSON\",\r\n        \"schema\": {\r\n          \"type\": \"object\",\r\n          \"properties\": {\r\n            \"message\": {\r\n              \"type\": \"string\",\r\n              \"description\": \"Présentation du plan, en 2 à 4 phrases, en vouvoyant l'utilisateur, avec un avertissement si l'objectif est ambitieux.\"\r\n            },\r\n            \"sessions\": {\r\n              \"type\": \"array\",\r\n              \"description\": \"Les séances du plan, dans l'ordre des dates.\",\r\n              \"items\": {\r\n                \"type\": \"object\",\r\n                \"properties\": {\r\n                  \"date\": {\r\n                    \"type\": \"string\",\r\n                    \"format\": \"date\",\r\n                    \"description\": \"Date de la séance (AAAA-MM-JJ).\"\r\n                  },\r\n                  \"time\": {\r\n                    \"type\": \"string\",\r\n                    \"enum\": [\r\n                      \"matin\",\r\n                      \"midi\",\r\n                      \"après-midi\",\r\n                      \"soir\"\r\n                    ],\r\n                    \"description\": \"Moment de la séance, comme dans les disponibilités.\"\r\n                  },\r\n                  \"distance\": {\r\n                    \"type\": \"number\",\r\n                    \"description\": \"Distance en km.\"\r\n                  },\r\n                  \"duration\": {\r\n                    \"type\": \"integer\",\r\n                    \"description\": \"Durée en minutes.\"\r\n                  },\r\n                  \"description\": {\r\n                    \"type\": \"string\",\r\n                    \"description\": \"Comment aborder la séance et son déroulé, en une ou deux phrases simples, en vouvoyant l'utilisateur.\"\r\n                  }\r\n                },\r\n                \"required\": [\r\n                  \"date\",\r\n                  \"time\",\r\n                  \"distance\",\r\n                  \"duration\",\r\n                  \"description\"\r\n                ]\r\n              }\r\n            },\r\n            \"nutritionTips\": {\r\n              \"type\": \"array\",\r\n              \"description\": \"Conseils alimentaires généraux, en vouvoyant l'utilisateur.\",\r\n              \"items\": {\r\n                \"type\": \"string\"\r\n              },\r\n              \"minItems\": 3,\r\n              \"maxItems\": 5\r\n            }\r\n          },\r\n          \"required\": [\r\n            \"message\",\r\n            \"sessions\",\r\n            \"nutritionTips\"\r\n          ]\r\n        }\r\n      }\r\n    }\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/models/gemini-3.5-flash-lite:generateContent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "models",
+                "gemini-3.5-flash-lite:generateContent"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": ":status",
+              "value": "200"
+            },
+            {
+              "key": "x-gemini-service-tier",
+              "value": "standard"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=UTF-8"
+            },
+            {
+              "key": "vary",
+              "value": "Origin, X-Origin, Referer"
+            },
+            {
+              "key": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "key": "date",
+              "value": "Thu, 26 Nov 2026 14:40:05 GMT"
+            },
+            {
+              "key": "server",
+              "value": "scaffolding on HTTPServer2"
+            },
+            {
+              "key": "content-length",
+              "value": "1806"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "server-timing",
+              "value": "gfet4t7; dur=7812"
+            },
+            {
+              "key": "alt-svc",
+              "value": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"candidates\": [\n    {\n      \"content\": {\n        \"parts\": [\n          {\n            \"text\": \"{\\n  \\\"message\\\": \\\"Voici votre plan d'entraînement personnalisé pour vous préparer progressivement à votre semi-marathon en prenant en compte vos disponibilités et vos séances passées. Compte tenu du délai court et de votre base actuelle, cet objectif est particulièrement ambitieux, écoutez bien votre corps pour éviter les blessures. N'oubliez pas qu'aucun résultat n'est garanti, l'essentiel est de progresser à votre rythme.\\\",\\n  \\\"sessions\\\": [\\n    {\\n      \\\"date\\\": \\\"2026-12-02\\\",\\n      \\\"time\\\": \\\"soir\\\",\\n      \\\"distance\\\": 6.0,\\n      \\\"duration\\\": 40,\\n      \\\"description\\\": \\\"Commencez par un échauffement de cinq minutes en marchant, puis courez à votre allure habituelle sans forcer.\\\"\\n    },\\n    {\\n      \\\"date\\\": \\\"2026-12-06\\\",\\n      \\\"time\\\": \\\"matin\\\",\\n      \\\"distance\\\": 10.0,\\n      \\\"duration\\\": 65,\\n      \\\"description\\\": \\\"Maintenez une allure régulière et confortable tout au long de cette sortie pour habituer votre corps à la distance.\\\"\\n    },\\n    {\\n      \\\"date\\\": \\\"2026-12-09\\\",\\n      \\\"time\\\": \\\"soir\\\",\\n      \\\"distance\\\": 6.5,\\n      \\\"duration\\\": 42,\\n      \\\"description\\\": \\\"Courez à un rythme constant, en veillant à bien respirer et à garder une foulée souple.\\\"\\n    },\\n    {\\n      \\\"date\\\": \\\"2026-12-13\\\",\\n      \\\"time\\\": \\\"matin\\\",\\n      \\\"distance\\\": 12.0,\\n      \\\"duration\\\": 80,\\n      \\\"description\\\": \\\"Partez prudemment pour cette sortie longue, l'objectif est d'aller au bout de la durée en restant à l'aise.\\\"\\n    },\\n    {\\n      \\\"date\\\": \\\"2026-12-16\\\",\\n      \\\"time\\\": \\\"soir\\\",\\n      \\\"distance\\\": 6.0,\\n      \\\"duration\\\": 40,\\n      \\\"description\\\": \\\"Une séance de maintien pour garder le rythme et récupérer de la sortie précédente.\\\"\\n    },\\n    {\\n      \\\"date\\\": \\\"2026-12-20\\\",\\n      \\\"time\\\": \\\"matin\\\",\\n      \\\"distance\\\": 13.0,\\n      \\\"duration\\\": 85,\\n      \\\"description\\\": \\\"Concentrez-vous sur votre régularité et marchez un peu si vous en ressentez le besoin.\\\"\\n    },\\n    {\\n      \\\"date\\\": \\\"2026-12-23\\\",\\n      \\\"time\\\": \\\"soir\\\",\\n      \\\"distance\\\": 6.5,\\n      \\\"duration\\\": 42,\\n      \\\"description\\\": \\\"Restez sur votre allure de croisière habituelle, sans chercher à accélérer.\\\"\\n    },\\n    {\\n      \\\"date\\\": \\\"2026-12-27\\\",\\n      \\\"time\\\": \\\"matin\\\",\\n      \\\"distance\\\": 14.0,\\n      \\\"duration\\\": 90,\\n      \\\"description\\\": \\\"Dernière sortie longue avant la période d'allègement, gérez bien votre effort du début à la fin.\\\"\\n    },\\n    {\\n      \\\"date\\\": \\\"2026-12-30\\\",\\n      \\\"time\\\": \\\"soir\\\",\\n      \\\"distance\\\": 5.0,\\n      \\\"duration\\\": 35,\\n      \\\"description\\\": \\\"Séance courte et facile pour bien récupérer et relâcher les tensions.\\\"\\n    },\\n    {\\n      \\\"date\\\": \\\"2027-01-03\\\",\\n      \\\"time\\\": \\\"matin\\\",\\n      \\\"distance\\\": 10.0,\\n      \\\"duration\\\": 65,\\n      \\\"description\\\": \\\"Réduisez la distance pour commencer à stocker de l'énergie et reposer vos muscles.\\\"\\n    },\\n    {\\n      \\\"date\\\": \\\"2027-01-06\\\",\\n      \\\"time\\\": \\\"soir\\\",\\n      \\\"distance\\\": 4.0,\\n      \\\"duration\\\": 25,\\n      \\\"description\\\": \\\"Une petite sortie d'entretien très facile pour garder de bonnes sensations.\\\"\\n    },\\n    {\\n      \\\"date\\\": \\\"2027-01-10\\\",\\n      \\\"time\\\": \\\"matin\\\",\\n      \\\"distance\\\": 21.1,\\n      \\\"duration\\\": 140,\\n      \\\"description\\\": \\\"Jour de course : partez très prudemment pour tenir la distance, écoutez vos sensations et donnez le meilleur de vous-même.\\\"\\n    }\\n  ],\\n  \\\"nutritionTips\\\": [\\n    \\\"Hydratez-vous régulièrement tout au long de la journée en buvant de l'eau selon votre soif.\\\",\\n    \\\"Privilégiez des repas équilibrés contenant des sources de glucides pour l'énergie, à adapter selon vos habitudes alimentaires et vos éventuelles allergies.\\\",\\n    \\\"Évitez de tester de nouveaux aliments ou plats lourds les jours de course ou la veille des sorties longues.\\\",\\n    \\\"Mangez un en-cas léger et digeste au moins deux heures avant vos séances pour éviter les inconforts.\\\"\\n  ]\\n}\",\n            \"thoughtSignature\": \"EpYBCpMBAWkUfRO83n9IBpFpo/5e/HYqAybssSz/wb63xh9UdV9CxQdKXvp3LckZNKct0IhCkdqInhKznYgyO12XlLIPsQlmDF5nXyQ94IHx5LzMvwGeNqr2rXPFU3KrRLRZhf68kWJWpZC7858CqHf38uKsohVYKL4E1pouACYDb1NilfOYb8f/be02gcLNyNrybG0KOLIO\"\n          }\n        ],\n        \"role\": \"model\"\n      },\n      \"finishReason\": \"STOP\",\n      \"index\": 0\n    }\n  ],\n  \"usageMetadata\": {\n    \"promptTokenCount\": 888,\n    \"candidatesTokenCount\": 1174,\n    \"totalTokenCount\": 2062,\n    \"promptTokensDetails\": [\n      {\n        \"modality\": \"TEXT\",\n        \"tokenCount\": 888\n      }\n    ],\n    \"serviceTier\": \"standard\"\n  },\n  \"modelVersion\": \"gemini-3.5-flash-lite\",\n  \"responseId\": \"vUQIa__jO4XpkdUPg7qwuAM\"\n}"
+        },
+        {
+          "name": "V4 - Progression rule restored",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"system_instruction\": {\r\n    \"parts\": [\r\n      {\r\n        \"text\": \"# Contexte\\nTu es un coach de course à pied pour SportSee, une application de suivi sportif.\\nLes utilisateurs sont des coureurs amateurs.\\n\\n# Tâche\\nCrée un plan d'entraînement personnalisé pour aider l'utilisateur à atteindre son objectif.\\n\\n# Données reçues\\nTu reçois un JSON avec :\\n- startDate et endDate : le premier et le dernier jour du plan (AAAA-MM-JJ). Si l'objectif est une course, elle a lieu le jour de endDate.\\n- goal : l'objectif de l'utilisateur.\\n- availability : les jours (day) et moments (time) où il peut courir, avec la durée maximale en minutes (maxDuration).\\n- age : son âge.\\n- sessions : ses séances des 8 dernières semaines, avec la date, la distance (km), la durée (minutes) et la vitesse moyenne (km/h). Si la liste est vide, considère que c'est un débutant.\\n\\n# Règles\\n- Place les séances uniquement aux jours et moments de availability, entre startDate et endDate.\\n- Ne dépasse jamais maxDuration, sauf pour la course elle-même.\\n- La sécurité passe avant l'objectif.\\n- Au début, ne lui demande pas plus que ce qu'il a déjà fait ces 8 dernières semaines : pas de séance plus longue que sa plus longue séance, pas de semaine plus chargée que sa semaine la plus chargée. Ensuite, augmente petit à petit.\\n- Garde une vitesse proche de celle de ses séances passées. Tu peux l'augmenter légèrement, petit à petit.\\n- Si l'objectif n'est pas atteignable sans risque, dis-le clairement dans message.\\n- Ne promets aucun résultat et n'invente aucune information absente des données.\\n- Donne seulement des conseils alimentaires généraux : pas de régime, pas de compléments alimentaires. Rappelle de les adapter à ses allergies et à ses habitudes alimentaires.\\n- Ne donne aucun avis médical.\\n- Vouvoie toujours l'utilisateur. Écris en français correct, avec des mots simples et un ton encourageant.\\n\\n# Format de réponse\\nRéponds uniquement en JSON, selon le schéma fourni.\\nExemple d'une séance :\\n{\\\"date\\\": \\\"2026-12-02\\\", \\\"time\\\": \\\"soir\\\", \\\"distance\\\": 5, \\\"duration\\\": 35, \\\"description\\\": \\\"Commencez doucement, puis courez à votre rythme habituel, sans forcer.\\\"}\"\r\n      }\r\n    ]\r\n  },\r\n  \"contents\": [\r\n    {\r\n      \"parts\": [\r\n        {\r\n          \"text\": \"{\\\"startDate\\\": \\\"2026-11-30\\\", \\\"endDate\\\": \\\"2027-01-10\\\", \\\"goal\\\": \\\"Semi-marathon\\\", \\\"availability\\\": [{\\\"day\\\": \\\"mercredi\\\", \\\"time\\\": \\\"soir\\\", \\\"maxDuration\\\": 45}, {\\\"day\\\": \\\"dimanche\\\", \\\"time\\\": \\\"matin\\\", \\\"maxDuration\\\": 90}], \\\"age\\\": 32, \\\"sessions\\\": [{\\\"date\\\": \\\"2026-10-05\\\", \\\"distance\\\": 9.2, \\\"duration\\\": 60, \\\"speed\\\": 9.2}, {\\\"date\\\": \\\"2026-10-12\\\", \\\"distance\\\": 5.8, \\\"duration\\\": 38, \\\"speed\\\": 9.2}, {\\\"date\\\": \\\"2026-10-19\\\", \\\"distance\\\": 4.4, \\\"duration\\\": 29, \\\"speed\\\": 9.1}, {\\\"date\\\": \\\"2026-10-23\\\", \\\"distance\\\": 6.5, \\\"duration\\\": 42, \\\"speed\\\": 9.3}, {\\\"date\\\": \\\"2026-10-26\\\", \\\"distance\\\": 5.3, \\\"duration\\\": 35, \\\"speed\\\": 9.1}, {\\\"date\\\": \\\"2026-11-02\\\", \\\"distance\\\": 7, \\\"duration\\\": 45, \\\"speed\\\": 9.3}, {\\\"date\\\": \\\"2026-11-09\\\", \\\"distance\\\": 5.5, \\\"duration\\\": 36, \\\"speed\\\": 9.2}, {\\\"date\\\": \\\"2026-11-16\\\", \\\"distance\\\": 4.2, \\\"duration\\\": 28, \\\"speed\\\": 9.0}]}\"\r\n        }\r\n      ]\r\n    }\r\n  ],\r\n  \"generationConfig\": {\r\n    \"responseFormat\": {\r\n      \"text\": {\r\n        \"mimeType\": \"APPLICATION_JSON\",\r\n        \"schema\": {\r\n          \"type\": \"object\",\r\n          \"properties\": {\r\n            \"message\": {\r\n              \"type\": \"string\",\r\n              \"description\": \"Présentation du plan, en 2 à 4 phrases, en vouvoyant l'utilisateur, avec un avertissement si l'objectif est ambitieux.\"\r\n            },\r\n            \"sessions\": {\r\n              \"type\": \"array\",\r\n              \"description\": \"Les séances du plan, dans l'ordre des dates.\",\r\n              \"items\": {\r\n                \"type\": \"object\",\r\n                \"properties\": {\r\n                  \"date\": {\r\n                    \"type\": \"string\",\r\n                    \"format\": \"date\",\r\n                    \"description\": \"Date de la séance (AAAA-MM-JJ).\"\r\n                  },\r\n                  \"time\": {\r\n                    \"type\": \"string\",\r\n                    \"enum\": [\r\n                      \"matin\",\r\n                      \"midi\",\r\n                      \"après-midi\",\r\n                      \"soir\"\r\n                    ],\r\n                    \"description\": \"Moment de la séance, comme dans les disponibilités.\"\r\n                  },\r\n                  \"distance\": {\r\n                    \"type\": \"number\",\r\n                    \"description\": \"Distance en km.\"\r\n                  },\r\n                  \"duration\": {\r\n                    \"type\": \"integer\",\r\n                    \"description\": \"Durée en minutes.\"\r\n                  },\r\n                  \"description\": {\r\n                    \"type\": \"string\",\r\n                    \"description\": \"Comment aborder la séance et son déroulé, en une ou deux phrases simples, en vouvoyant l'utilisateur.\"\r\n                  }\r\n                },\r\n                \"required\": [\r\n                  \"date\",\r\n                  \"time\",\r\n                  \"distance\",\r\n                  \"duration\",\r\n                  \"description\"\r\n                ]\r\n              }\r\n            },\r\n            \"nutritionTips\": {\r\n              \"type\": \"array\",\r\n              \"description\": \"Conseils alimentaires généraux, en vouvoyant l'utilisateur.\",\r\n              \"items\": {\r\n                \"type\": \"string\"\r\n              },\r\n              \"minItems\": 3,\r\n              \"maxItems\": 5\r\n            }\r\n          },\r\n          \"required\": [\r\n            \"message\",\r\n            \"sessions\",\r\n            \"nutritionTips\"\r\n          ]\r\n        }\r\n      }\r\n    }\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/models/gemini-3.5-flash-lite:generateContent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "models",
+                "gemini-3.5-flash-lite:generateContent"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": ":status",
+              "value": "200"
+            },
+            {
+              "key": "x-gemini-service-tier",
+              "value": "standard"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=UTF-8"
+            },
+            {
+              "key": "vary",
+              "value": "Origin, X-Origin, Referer"
+            },
+            {
+              "key": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "key": "date",
+              "value": "Thu, 26 Nov 2026 14:55:28 GMT"
+            },
+            {
+              "key": "server",
+              "value": "scaffolding on HTTPServer2"
+            },
+            {
+              "key": "content-length",
+              "value": "1558"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "server-timing",
+              "value": "gfet4t7; dur=2706"
+            },
+            {
+              "key": "alt-svc",
+              "value": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"candidates\": [\n    {\n      \"content\": {\n        \"parts\": [\n          {\n            \"text\": \"{\\\"message\\\": \\\"Voici votre plan d'entraînement personnalisé pour préparer votre semi-marathon en vous appuyant sur vos sorties récentes. Attention, votre objectif est très ambitieux par rapport à votre volume actuel et demande de la prudence. Pensez à écouter votre corps à chaque étape pour progresser en toute sécurité.\\\", \\\"sessions\\\": [{\\\"date\\\": \\\"2026-12-02\\\", \\\"time\\\": \\\"soir\\\", \\\"distance\\\": 6.0, \\\"duration\\\": 40, \\\"description\\\": \\\"Commencez doucement, puis courez à votre rythme habituel, sans forcer.\\\"}, {\\\"date\\\": \\\"2026-12-06\\\", \\\"time\\\": \\\"matin\\\", \\\"distance\\\": 9.5, \\\"duration\\\": 65, \\\"description\\\": \\\"Maintenez une allure régulière et confortable du début à la fin.\\\"}, {\\\"date\\\": \\\"2026-12-09\\\", \\\"time\\\": \\\"soir\\\", \\\"distance\\\": 6.5, \\\"duration\\\": 42, \\\"description\\\": \\\"Restez sur une foulée souple et contrôlée tout au long de la séance.\\\"}, {\\\"date\\\": \\\"2026-12-13\\\", \\\"time\\\": \\\"matin\\\", \\\"distance\\\": 11.0, \\\"duration\\\": 75, \\\"description\\\": \\\"Prenez le temps de vous échauffer et gérez bien votre effort sur la durée.\\\"}, {\\\"date\\\": \\\"2026-12-16\\\", \\\"time\\\": \\\"soir\\\", \\\"distance\\\": 6.5, \\\"duration\\\": 42, \\\"description\\\": \\\"Faites une séance fluide en conservant votre vitesse habituelle.\\\"}, {\\\"date\\\": \\\"2026-12-20\\\", \\\"time\\\": \\\"matin\\\", \\\"distance\\\": 13.0, \\\"duration\\\": 85, \\\"description\\\": \\\"Hydratez-vous régulièrement et concentrez-vous sur votre régularité.\\\"}, {\\\"date\\\": \\\"2026-12-23\\\", \\\"time\\\": \\\"soir\\\", \\\"distance\\\": 5.0, \\\"duration\\\": 35, \\\"description\\\": \\\"Séance plus courte pour récupérer activement et garder le rythme.\\\"}, {\\\"date\\\": \\\"2026-12-27\\\", \\\"time\\\": \\\"matin\\\", \\\"distance\\\": 14.0, \\\"duration\\\": 90, \\\"description\\\": \\\"Gardez un rythme constant sans chercher à aller trop vite.\\\"}, {\\\"date\\\": \\\"2026-12-30\\\", \\\"time\\\": \\\"soir\\\", \\\"distance\\\": 5.0, \\\"duration\\\": 35, \\\"description\\\": \\\"Courrez relâché pour évacuer la fatigue de la semaine.\\\"}, {\\\"date\\\": \\\"2027-01-03\\\", \\\"time\\\": \\\"matin\\\", \\\"distance\\\": 12.0, \\\"duration\\\": 80, \\\"description\\\": \\\"Diminuez un peu le volume pour entamer la phase de repos.\\\"}, {\\\"date\\\": \\\"2027-01-06\\\", \\\"time\\\": \\\"soir\\\", \\\"distance\\\": 4.0, \\\"duration\\\": 25, \\\"description\\\": \\\"Petite sortie légère pour stimuler les jambes avant l'échéance.\\\"}, {\\\"date\\\": \\\"2027-01-10\\\", \\\"time\\\": \\\"matin\\\", \\\"distance\\\": 21.1, \\\"duration\\\": 140, \\\"description\\\": \\\"Donnez le meilleur de vous-même pour cette course, à votre rythme.\\\"}], \\\"nutritionTips\\\": [\\\"Buvez de l'eau régulièrement tout au long de la journée pour rester bien hydraté.\\\", \\\"Privilégiez des repas équilibrés riches en glucides complexes pour faire le plein d'énergie.\\\", \\\"Mangez au moins deux à trois heures avant vos séances pour faciliter la digestion.\\\", \\\"Adaptez ces conseils généraux à vos habitudes alimentaires et à vos éventuelles allergies.\\\"]}\",\n            \"thoughtSignature\": \"EpYBCpMBAWkUfROasmGHJihrAMofvGoSuiPrqvwPsGEixdofD8a8Carx7mDD3/+QivlqMHJfyWkkkPX/7CAB3vke5t0oJjemnSjT6eyK4onJ4mUHd6rQJOPXYrhjKYzHyF/4MlcSa2n1/0ebHzIR9cxFAb5KTGspuBM1bxOiq0PkKU+JakjqZo88+GOSVW9hZbCuyRcHDowZ\"\n          }\n        ],\n        \"role\": \"model\"\n      },\n      \"finishReason\": \"STOP\",\n      \"index\": 0\n    }\n  ],\n  \"usageMetadata\": {\n    \"promptTokenCount\": 922,\n    \"candidatesTokenCount\": 833,\n    \"totalTokenCount\": 1755,\n    \"promptTokensDetails\": [\n      {\n        \"modality\": \"TEXT\",\n        \"tokenCount\": 922\n      }\n    ],\n    \"serviceTier\": \"standard\"\n  },\n  \"modelVersion\": \"gemini-3.5-flash-lite\",\n  \"responseId\": \"XUgIa9D0MJSI28oPjPO5uQY\"\n}"
+        },
+        {
+          "name": "V5 - Final",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"system_instruction\": {\r\n    \"parts\": [\r\n      {\r\n        \"text\": \"# Contexte\\nTu es un coach de course à pied pour SportSee, une application de suivi sportif.\\nLes utilisateurs sont des coureurs amateurs.\\n\\n# Tâche\\nCrée un plan d'entraînement personnalisé pour aider l'utilisateur à atteindre son objectif.\\n\\n# Données reçues\\nTu reçois un JSON avec :\\n- startDate et endDate : le premier et le dernier jour du plan (AAAA-MM-JJ). Si l'objectif est une course, elle a lieu le jour de endDate.\\n- goal : l'objectif de l'utilisateur.\\n- availability : les jours (day) et moments (time) où il peut courir, avec la durée maximale en minutes (maxDuration).\\n- age : son âge.\\n- sessions : ses séances des 8 dernières semaines, avec la date, la distance (km), la durée (minutes) et la vitesse moyenne (km/h). Si la liste est vide, considère que c'est un débutant.\\n- longestDistance et maxWeeklyDistance : sa plus longue séance et sa semaine la plus chargée de ces 8 semaines (km).\\n\\n# Règles\\n- Place les séances uniquement aux jours et moments de availability, entre startDate et endDate.\\n- Ne dépasse jamais maxDuration, sauf pour la course elle-même.\\n- La sécurité passe avant l'objectif.\\n- Au début, pas de séance plus longue que longestDistance ni de semaine plus chargée que maxWeeklyDistance. Ensuite, augmente petit à petit.\\n- Garde une vitesse proche de celle de ses séances passées. Tu peux l'augmenter légèrement, petit à petit.\\n- Si l'objectif n'est pas atteignable sans risque, dis-le clairement dans message.\\n- Ne promets aucun résultat ni aucune sécurité, et n'invente aucune information absente des données.\\n- Donne seulement des conseils alimentaires généraux : pas de régime, pas de compléments alimentaires. Rappelle de les adapter à ses allergies et à ses habitudes alimentaires.\\n- Ne donne aucun avis médical.\\n- Vouvoie toujours l'utilisateur. Écris en français correct, avec des mots simples et un ton encourageant.\\n\\n# Format de réponse\\nRéponds uniquement en JSON, selon le schéma fourni.\"\r\n      }\r\n    ]\r\n  },\r\n  \"contents\": [\r\n    {\r\n      \"parts\": [\r\n        {\r\n          \"text\": \"{\\\"startDate\\\": \\\"2026-11-30\\\", \\\"endDate\\\": \\\"2027-01-10\\\", \\\"goal\\\": \\\"Semi-marathon\\\", \\\"availability\\\": [{\\\"day\\\": \\\"mercredi\\\", \\\"time\\\": \\\"soir\\\", \\\"maxDuration\\\": 45}, {\\\"day\\\": \\\"dimanche\\\", \\\"time\\\": \\\"matin\\\", \\\"maxDuration\\\": 90}], \\\"age\\\": 32, \\\"sessions\\\": [{\\\"date\\\": \\\"2026-10-05\\\", \\\"distance\\\": 9.2, \\\"duration\\\": 60, \\\"speed\\\": 9.2}, {\\\"date\\\": \\\"2026-10-12\\\", \\\"distance\\\": 5.8, \\\"duration\\\": 38, \\\"speed\\\": 9.2}, {\\\"date\\\": \\\"2026-10-19\\\", \\\"distance\\\": 4.4, \\\"duration\\\": 29, \\\"speed\\\": 9.1}, {\\\"date\\\": \\\"2026-10-23\\\", \\\"distance\\\": 6.5, \\\"duration\\\": 42, \\\"speed\\\": 9.3}, {\\\"date\\\": \\\"2026-10-26\\\", \\\"distance\\\": 5.3, \\\"duration\\\": 35, \\\"speed\\\": 9.1}, {\\\"date\\\": \\\"2026-11-02\\\", \\\"distance\\\": 7, \\\"duration\\\": 45, \\\"speed\\\": 9.3}, {\\\"date\\\": \\\"2026-11-09\\\", \\\"distance\\\": 5.5, \\\"duration\\\": 36, \\\"speed\\\": 9.2}, {\\\"date\\\": \\\"2026-11-16\\\", \\\"distance\\\": 4.2, \\\"duration\\\": 28, \\\"speed\\\": 9.0}], \\\"longestDistance\\\": 9.2, \\\"maxWeeklyDistance\\\": 10.9}\"\r\n        }\r\n      ]\r\n    }\r\n  ],\r\n  \"generationConfig\": {\r\n    \"responseFormat\": {\r\n      \"text\": {\r\n        \"mimeType\": \"APPLICATION_JSON\",\r\n        \"schema\": {\r\n          \"type\": \"object\",\r\n          \"properties\": {\r\n            \"message\": {\r\n              \"type\": \"string\",\r\n              \"description\": \"Présentation du plan, en 2 à 4 phrases, en vouvoyant l'utilisateur, avec un avertissement si l'objectif est ambitieux.\"\r\n            },\r\n            \"sessions\": {\r\n              \"type\": \"array\",\r\n              \"description\": \"Les séances du plan, dans l'ordre des dates.\",\r\n              \"items\": {\r\n                \"type\": \"object\",\r\n                \"properties\": {\r\n                  \"date\": {\r\n                    \"type\": \"string\",\r\n                    \"format\": \"date\",\r\n                    \"description\": \"Date de la séance (AAAA-MM-JJ).\"\r\n                  },\r\n                  \"time\": {\r\n                    \"type\": \"string\",\r\n                    \"enum\": [\r\n                      \"matin\",\r\n                      \"midi\",\r\n                      \"après-midi\",\r\n                      \"soir\"\r\n                    ],\r\n                    \"description\": \"Moment de la séance, comme dans les disponibilités.\"\r\n                  },\r\n                  \"distance\": {\r\n                    \"type\": \"number\",\r\n                    \"description\": \"Distance en km.\"\r\n                  },\r\n                  \"duration\": {\r\n                    \"type\": \"integer\",\r\n                    \"description\": \"Durée en minutes.\"\r\n                  },\r\n                  \"description\": {\r\n                    \"type\": \"string\",\r\n                    \"description\": \"Comment aborder la séance et son déroulé, en une ou deux phrases simples, en vouvoyant l'utilisateur.\"\r\n                  }\r\n                },\r\n                \"required\": [\r\n                  \"date\",\r\n                  \"time\",\r\n                  \"distance\",\r\n                  \"duration\",\r\n                  \"description\"\r\n                ]\r\n              }\r\n            },\r\n            \"nutritionTips\": {\r\n              \"type\": \"array\",\r\n              \"description\": \"Conseils alimentaires généraux, en vouvoyant l'utilisateur.\",\r\n              \"items\": {\r\n                \"type\": \"string\"\r\n              },\r\n              \"minItems\": 3,\r\n              \"maxItems\": 5\r\n            }\r\n          },\r\n          \"required\": [\r\n            \"message\",\r\n            \"sessions\",\r\n            \"nutritionTips\"\r\n          ]\r\n        }\r\n      }\r\n    }\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/models/gemini-3.5-flash-lite:generateContent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "models",
+                "gemini-3.5-flash-lite:generateContent"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": ":status",
+              "value": "200"
+            },
+            {
+              "key": "x-gemini-service-tier",
+              "value": "standard"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=UTF-8"
+            },
+            {
+              "key": "vary",
+              "value": "Origin, X-Origin, Referer"
+            },
+            {
+              "key": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "key": "date",
+              "value": "Thu, 26 Nov 2026 21:47:58 GMT"
+            },
+            {
+              "key": "server",
+              "value": "scaffolding on HTTPServer2"
+            },
+            {
+              "key": "content-length",
+              "value": "1603"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "server-timing",
+              "value": "gfet4t7; dur=2720"
+            },
+            {
+              "key": "alt-svc",
+              "value": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"candidates\": [\n    {\n      \"content\": {\n        \"parts\": [\n          {\n            \"text\": \"{\\\"message\\\": \\\"Bonjour ! Voici votre plan d'entraînement personnalisé pour vous préparer progressivement à votre objectif de semi-marathon. Votre objectif est particulièrement ambitieux au vu de votre historique récent, veillez donc à bien écouter vos sensations et à respecter les temps de repos.\\\", \\\"sessions\\\": [{\\\"date\\\": \\\"2026-12-02\\\", \\\"time\\\": \\\"soir\\\", \\\"distance\\\": 6.5, \\\"duration\\\": 42, \\\"description\\\": \\\"Effectuez une course à allure modérée pour reprendre en douceur le mercredi soir.\\\"}, {\\\"date\\\": \\\"2026-12-06\\\", \\\"time\\\": \\\"matin\\\", \\\"distance\\\": 9.0, \\\"duration\\\": 60, \\\"description\\\": \\\"Partez pour une sortie longue dominicale en gardant une allure confortable et régulière.\\\"}, {\\\"date\\\": \\\"2026-12-09\\\", \\\"time\\\": \\\"soir\\\", \\\"distance\\\": 6.5, \\\"duration\\\": 42, \\\"description\\\": \\\"Maintenez une vitesse constante tout au long de votre séance du mercredi.\\\"}, {\\\"date\\\": \\\"2026-12-13\\\", \\\"time\\\": \\\"matin\\\", \\\"distance\\\": 10.0, \\\"duration\\\": 65, \\\"description\\\": \\\"Augmentez légèrement votre distance ce dimanche en restant à l'écoute de votre corps.\\\"}, {\\\"date\\\": \\\"2026-12-16\\\", \\\"time\\\": \\\"soir\\\", \\\"distance\\\": 6.8, \\\"duration\\\": 44, \\\"description\\\": \\\"Réalisez cette séance de milieu de semaine avec un effort stable et mesuré.\\\"}, {\\\"date\\\": \\\"2026-12-20\\\", \\\"time\\\": \\\"matin\\\", \\\"distance\\\": 11.5, \\\"duration\\\": 75, \\\"description\\\": \\\"Profitez de votre matinée de dimanche pour une sortie longue un peu plus soutenue.\\\"}, {\\\"date\\\": \\\"2026-12-23\\\", \\\"time\\\": \\\"soir\\\", \\\"distance\\\": 6.8, \\\"duration\\\": 44, \\\"description\\\": \\\"Courrez à votre rythme habituel pour garder de bonnes sensations.\\\"}, {\\\"date\\\": \\\"2026-12-27\\\", \\\"time\\\": \\\"matin\\\", \\\"distance\\\": 13.0, \\\"duration\\\": 85, \\\"description\\\": \\\"Consacrez votre dimanche matin à une sortie longue pour préparer l'endurance nécessaire.\\\"}, {\\\"date\\\": \\\"2026-12-30\\\", \\\"time\\\": \\\"soir\\\", \\\"distance\\\": 7.0, \\\"duration\\\": 45, \\\"description\\\": \\\"Restez sur une allure aisée lors de ce dernier mercredi de l'année.\\\"}, {\\\"date\\\": \\\"2027-01-03\\\", \\\"time\\\": \\\"matin\\\", \\\"distance\\\": 14.0, \\\"duration\\\": 90, \\\"description\\\": \\\"Effectuez votre dernière sortie longue significative en prenant soin de bien vous hydrater.\\\"}, {\\\"date\\\": \\\"2027-01-06\\\", \\\"time\\\": \\\"soir\\\", \\\"distance\\\": 5.0, \\\"duration\\\": 33, \\\"description\\\": \\\"Faites une courte course de décrassage pour garder le corps actif avant la fin de semaine.\\\"}, {\\\"date\\\": \\\"2027-01-10\\\", \\\"time\\\": \\\"matin\\\", \\\"distance\\\": 21.1, \\\"duration\\\": 140, \\\"description\\\": \\\"Jour de course pour votre semi-marathon, gérez votre effort du mieux possible du départ à l'arrivée.\\\"}], \\\"nutritionTips\\\": [\\\"Pensez à adapter vos repas à vos habitudes alimentaires et à vos éventuelles allergies.\\\", \\\"Veillez à vous hydrater régulièrement tout au long de la journée, sans attendre d'avoir soif.\\\", \\\"Privilégiez des repas équilibrés contenant des glucides pour faire le plein d'énergie avant vos sorties.\\\", \\\"Évitez les aliments trop gras ou trop lourds juste avant de courir pour faciliter votre digestion.\\\"]}\",\n            \"thoughtSignature\": \"EpYBCpMBAWkUfRM6RxYSrI8eVRZzX78WKrdMIBvM8ZBPz5gKgWhxarJpSkDxeQKumNdIGVHAGs8DVb3bLtpl/5IHm2xcUon5pwiV6Wvl18SGGUkWW6nGP07tehdwPke6fXeWgHPDxF/wNQCT3JQse+S405wcuLtamhVfx19Bm74qnTDztDEydXNPPtCNGt9Yx2IcpqVtH4P2\"\n          }\n        ],\n        \"role\": \"model\"\n      },\n      \"finishReason\": \"STOP\",\n      \"index\": 0\n    }\n  ],\n  \"usageMetadata\": {\n    \"promptTokenCount\": 882,\n    \"candidatesTokenCount\": 857,\n    \"totalTokenCount\": 1739,\n    \"promptTokensDetails\": [\n      {\n        \"modality\": \"TEXT\",\n        \"tokenCount\": 882\n      }\n    ],\n    \"serviceTier\": \"standard\"\n  },\n  \"modelVersion\": \"gemini-3.5-flash-lite\",\n  \"responseId\": \"C6kIa-_iMY--vdIPxPiy6AU\"\n}"
+        },
+        {
+          "name": "V6 - Formal language",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"system_instruction\": {\r\n    \"parts\": [\r\n      {\r\n        \"text\": \"# Contexte\\nTu es un coach de course à pied pour SportSee, une application de suivi sportif.\\nLes utilisateurs sont des coureurs amateurs.\\n\\n# Tâche\\nCrée un plan d'entraînement personnalisé pour aider l'utilisateur à atteindre son objectif.\\n\\n# Données reçues\\nTu reçois un JSON avec :\\n- startDate et endDate : le premier et le dernier jour du plan (AAAA-MM-JJ). Si l'objectif est une course, elle a lieu le jour de endDate.\\n- goal : l'objectif de l'utilisateur.\\n- availability : les jours (day) et moments (time) où il peut courir, avec la durée maximale en minutes (maxDuration).\\n- age : son âge.\\n- sessions : ses séances des 8 dernières semaines, avec la date, la distance (km), la durée (minutes) et la vitesse moyenne (km/h). Si la liste est vide, considère que c'est un débutant.\\n- longestDistance : sa plus longue séance de ces 8 semaines (km).\\n\\n# Règles\\n- Place les séances uniquement aux jours et moments de availability, entre startDate et endDate.\\n- Ne dépasse jamais maxDuration, sauf pour la course elle-même.\\n- La sécurité passe avant l'objectif.\\n- Au début, pas de séance plus longue que longestDistance. Ensuite, augmente petit à petit.\\n- Garde une vitesse proche de celle de ses séances passées. Tu peux l'augmenter légèrement, petit à petit.\\n- Si l'objectif n'est pas atteignable sans risque, dis-le clairement dans message.\\n- Ne promets aucun résultat ni aucune sécurité, et n'invente aucune information absente des données.\\n- Donne seulement des conseils alimentaires généraux : pas de régime, pas de compléments alimentaires. Rappelle de les adapter à ses allergies et à ses habitudes alimentaires.\\n- Ne donne aucun avis médical.\\n- Vouvoie toujours l'utilisateur. Écris dans un français soigné et correct, sans jargon, avec un ton encourageant.\\n\\n# Format de réponse\\nRéponds uniquement en JSON, selon le schéma fourni.\"\r\n      }\r\n    ]\r\n  },\r\n  \"contents\": [\r\n    {\r\n      \"parts\": [\r\n        {\r\n          \"text\": \"{\\\"startDate\\\": \\\"2026-11-30\\\", \\\"endDate\\\": \\\"2027-01-10\\\", \\\"goal\\\": \\\"Semi-marathon\\\", \\\"availability\\\": [{\\\"day\\\": \\\"mercredi\\\", \\\"time\\\": \\\"soir\\\", \\\"maxDuration\\\": 45}, {\\\"day\\\": \\\"dimanche\\\", \\\"time\\\": \\\"matin\\\", \\\"maxDuration\\\": 90}], \\\"age\\\": 32, \\\"sessions\\\": [{\\\"date\\\": \\\"2026-10-05\\\", \\\"distance\\\": 9.2, \\\"duration\\\": 60, \\\"speed\\\": 9.2}, {\\\"date\\\": \\\"2026-10-12\\\", \\\"distance\\\": 5.8, \\\"duration\\\": 38, \\\"speed\\\": 9.2}, {\\\"date\\\": \\\"2026-10-19\\\", \\\"distance\\\": 4.4, \\\"duration\\\": 29, \\\"speed\\\": 9.1}, {\\\"date\\\": \\\"2026-10-23\\\", \\\"distance\\\": 6.5, \\\"duration\\\": 42, \\\"speed\\\": 9.3}, {\\\"date\\\": \\\"2026-10-26\\\", \\\"distance\\\": 5.3, \\\"duration\\\": 35, \\\"speed\\\": 9.1}, {\\\"date\\\": \\\"2026-11-02\\\", \\\"distance\\\": 7, \\\"duration\\\": 45, \\\"speed\\\": 9.3}, {\\\"date\\\": \\\"2026-11-09\\\", \\\"distance\\\": 5.5, \\\"duration\\\": 36, \\\"speed\\\": 9.2}, {\\\"date\\\": \\\"2026-11-16\\\", \\\"distance\\\": 4.2, \\\"duration\\\": 28, \\\"speed\\\": 9.0}], \\\"longestDistance\\\": 9.2}\"\r\n        }\r\n      ]\r\n    }\r\n  ],\r\n  \"generationConfig\": {\r\n    \"responseFormat\": {\r\n      \"text\": {\r\n        \"mimeType\": \"APPLICATION_JSON\",\r\n        \"schema\": {\r\n          \"type\": \"object\",\r\n          \"properties\": {\r\n            \"message\": {\r\n              \"type\": \"string\",\r\n              \"description\": \"Présentation du plan, en 2 à 4 phrases, en vouvoyant l'utilisateur, avec un avertissement si l'objectif est ambitieux.\"\r\n            },\r\n            \"sessions\": {\r\n              \"type\": \"array\",\r\n              \"description\": \"Les séances du plan, dans l'ordre des dates.\",\r\n              \"items\": {\r\n                \"type\": \"object\",\r\n                \"properties\": {\r\n                  \"date\": {\r\n                    \"type\": \"string\",\r\n                    \"format\": \"date\",\r\n                    \"description\": \"Date de la séance (AAAA-MM-JJ).\"\r\n                  },\r\n                  \"time\": {\r\n                    \"type\": \"string\",\r\n                    \"enum\": [\r\n                      \"matin\",\r\n                      \"midi\",\r\n                      \"après-midi\",\r\n                      \"soir\"\r\n                    ],\r\n                    \"description\": \"Moment de la séance, comme dans les disponibilités.\"\r\n                  },\r\n                  \"distance\": {\r\n                    \"type\": \"number\",\r\n                    \"description\": \"Distance en km.\"\r\n                  },\r\n                  \"duration\": {\r\n                    \"type\": \"integer\",\r\n                    \"description\": \"Durée en minutes.\"\r\n                  },\r\n                  \"description\": {\r\n                    \"type\": \"string\",\r\n                    \"description\": \"Comment aborder la séance et son déroulé, avec des conseils de course, en une ou deux phrases, en vouvoyant l'utilisateur.\"\r\n                  }\r\n                },\r\n                \"required\": [\r\n                  \"date\",\r\n                  \"time\",\r\n                  \"distance\",\r\n                  \"duration\",\r\n                  \"description\"\r\n                ]\r\n              }\r\n            },\r\n            \"nutritionTips\": {\r\n              \"type\": \"array\",\r\n              \"description\": \"Conseils alimentaires généraux, en vouvoyant l'utilisateur.\",\r\n              \"items\": {\r\n                \"type\": \"string\"\r\n              },\r\n              \"minItems\": 3,\r\n              \"maxItems\": 5\r\n            }\r\n          },\r\n          \"required\": [\r\n            \"message\",\r\n            \"sessions\",\r\n            \"nutritionTips\"\r\n          ]\r\n        }\r\n      }\r\n    }\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/models/gemini-3.5-flash-lite:generateContent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "models",
+                "gemini-3.5-flash-lite:generateContent"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": ":status",
+              "value": "200"
+            },
+            {
+              "key": "x-gemini-service-tier",
+              "value": "standard"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=UTF-8"
+            },
+            {
+              "key": "vary",
+              "value": "Origin, X-Origin, Referer"
+            },
+            {
+              "key": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "key": "date",
+              "value": "Thu, 26 Nov 2026 22:12:29 GMT"
+            },
+            {
+              "key": "server",
+              "value": "scaffolding on HTTPServer2"
+            },
+            {
+              "key": "content-length",
+              "value": "1690"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "server-timing",
+              "value": "gfet4t7; dur=3337"
+            },
+            {
+              "key": "alt-svc",
+              "value": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"candidates\": [\n    {\n      \"content\": {\n        \"parts\": [\n          {\n            \"text\": \"{\\n  \\\"message\\\": \\\"Voici votre plan d'entraînement personnalisé pour vous préparer progressivement à votre semi-marathon entre le 30 novembre 2026 et le 10 janvier 2027. Compte tenu de vos séances passées, cet objectif de semi-marathon est particulièrement ambitieux pour cette période, écoutez bien votre corps pour éviter les blessures. N'oubliez pas que nous ne pouvons vous promettre aucun résultat ni garantir votre sécurité absolue pendant l'effort.\\\",\\n  \\\"sessions\\\": [\\n    {\\n      \\\"date\\\": \\\"2026-12-02\\\",\\n      \\\"time\\\": \\\"soir\\\",\\n      \\\"distance\\\": 6.0,\\n      \\\"duration\\\": 40,\\n      \\\"description\\\": \\\"Courrez à une allure régulière et confortable pour reprendre en douceur.\\\"\\n    },\\n    {\\n      \\\"date\\\": \\\"2026-12-06\\\",\\n      \\\"time\\\": \\\"matin\\\",\\n      \\\"distance\\\": 9.5,\\n      \\\"duration\\\": 65,\\n      \\\"description\\\": \\\"Maintenez une vitesse stable proche de 9 km/h pour cette sortie longue.\\\"\\n    },\\n    {\\n      \\\"date\\\": \\\"2026-12-09\\\",\\n      \\\"time\\\": \\\"soir\\\",\\n      \\\"distance\\\": 6.5,\\n      \\\"duration\\\": 42,\\n      \\\"description\\\": \\\"Variez légèrement le rythme tout en restant sous votre durée maximale.\\\"\\n    },\\n    {\\n      \\\"date\\\": \\\"2026-12-13\\\",\\n      \\\"time\\\": \\\"matin\\\",\\n      \\\"distance\\\": 11.0,\\n      \\\"duration\\\": 75,\\n      \\\"description\\\": \\\"Augmentez progressivement la distance de votre sortie dominicale.\\\"\\n    },\\n    {\\n      \\\"date\\\": \\\"2026-12-16\\\",\\n      \\\"time\\\": \\\"soir\\\",\\n      \\\"distance\\\": 6.5,\\n      \\\"duration\\\": 42,\\n      \\\"description\\\": \\\"Récupérez bien de votre sortie longue avec une allure modérée.\\\"\\n    },\\n    {\\n      \\\"date\\\": \\\"2026-12-20\\\",\\n      \\\"time\\\": \\\"matin\\\",\\n      \\\"distance\\\": 13.0,\\n      \\\"duration\\\": 85,\\n      \\\"description\\\": \\\"Restez concentré sur votre souffle et gérez votre effort sur la durée.\\\"\\n    },\\n    {\\n      \\\"date\\\": \\\"2026-12-23\\\",\\n      \\\"time\\\": \\\"soir\\\",\\n      \\\"distance\\\": 6.0,\\n      \\\"duration\\\": 40,\\n      \\\"description\\\": \\\"Faites une séance courte pour garder le rythme sans vous fatiguer.\\\"\\n    },\\n    {\\n      \\\"date\\\": \\\"2026-12-27\\\",\\n      \\\"time\\\": \\\"matin\\\",\\n      \\\"distance\\\": 15.0,\\n      \\\"duration\\\": 90,\\n      \\\"description\\\": \\\"Profitez de cette sortie longue pour tester votre hydratation en course.\\\"\\n    },\\n    {\\n      \\\"date\\\": \\\"2026-12-30\\\",\\n      \\\"time\\\": \\\"soir\\\",\\n      \\\"distance\\\": 5.0,\\n      \\\"duration\\\": 35,\\n      \\\"description\\\": \\\"Réduisez le volume pour commencer à récupérer des semaines précédentes.\\\"\\n    },\\n    {\\n      \\\"date\\\": \\\"2027-01-03\\\",\\n      \\\"time\\\": \\\"matin\\\",\\n      \\\"distance\\\": 10.0,\\n      \\\"duration\\\": 65,\\n      \\\"description\\\": \\\"Intégrez une séance de transition plus courte pour préparer la semaine de la course.\\\"\\n    },\\n    {\\n      \\\"date\\\": \\\"2027-01-06\\\",\\n      \\\"time\\\": \\\"soir\\\",\\n      \\\"distance\\\": 4.0,\\n      \\\"duration\\\": 25,\\n      \\\"description\\\": \\\"Faites une toute petite sortie de décrassage pour garder de l'influx.\\\"\\n    },\\n    {\\n      \\\"date\\\": \\\"2027-01-10\\\",\\n      \\\"time\\\": \\\"matin\\\",\\n      \\\"distance\\\": 21.1,\\n      \\\"duration\\\": 140,\\n      \\\"description\\\": \\\"C'est le jour de votre semi-marathon, partez prudemment et gérez votre effort jusqu'à la fin.\\\"\\n    }\\n  ],\\n  \\\"nutritionTips\\\": [\\n    \\\"Veillez à bien vous hydrater régulièrement tout au long de la journée, et pas seulement les jours de course.\\\",\\n    \\\"Adaptez votre alimentation à vos habitudes personnelles et à vos éventuelles allergies pour éviter les inconforts digestifs.\\\",\\n    \\\"Privilégiez des repas équilibrés contenant des glucides lents avant vos sorties longues pour faire le plein d'énergie.\\\",\\n    \\\"Évitez de tester de nouveaux aliments ou de nouveaux plats juste avant une séance importante ou la course.\\\"\\n  ]\\n}\",\n            \"thoughtSignature\": \"EpYBCpMBAWkUfROx3E4hMfYf8UxlAg/X7pA+GeNGsaZdIyWiDjYu6U8kCPzPcYYrHxUlZKDNO5MeMxi5/8oiChcpz8UGBXSHwl4fTCuEmK7QPMDqf8QhFxYHXN1Rodb2wtf1NV9dOQCGXjyWUqiCe7TCtPSBdBNGIaUXYDoSh8oDH5bAja7Pbhck+CQvVaKXYUdAEmGVgZ/1\"\n          }\n        ],\n        \"role\": \"model\"\n      },\n      \"finishReason\": \"STOP\",\n      \"index\": 0\n    }\n  ],\n  \"usageMetadata\": {\n    \"promptTokenCount\": 855,\n    \"candidatesTokenCount\": 1108,\n    \"totalTokenCount\": 1963,\n    \"promptTokensDetails\": [\n      {\n        \"modality\": \"TEXT\",\n        \"tokenCount\": 855\n      }\n    ],\n    \"serviceTier\": \"standard\"\n  },\n  \"modelVersion\": \"gemini-3.5-flash-lite\",\n  \"responseId\": \"yq4Ia4v7HJya3boP_PTp4Qw\"\n}"
         }
       ]
     }
