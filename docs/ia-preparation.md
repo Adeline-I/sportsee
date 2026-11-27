@@ -313,6 +313,28 @@ Ce que ces tests montrent :
 
 ## 6. Les réglages testés
 
+Ces réglages ont été testés avec une question simple (« Donne trois conseils simples pour bien débuter la course à pied. »), dans la requête Generate content de la collection Postman.
+
+| Réglage                       | Ce qu'il est censé faire                                                                    | Ce qu'on a constaté                                                                                                                                                                                                                                                                                     |
+| ----------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Température (0 et 2)          | Régler la part de hasard : à 0, la réponse devrait toujours être la même ; à 2, plus variée | À 0, deux envois donnent des réponses très proches, mais pas identiques : Google indique qu'une petite variation reste possible ([réglage des paramètres](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/prompts/adjust-parameter-values)). À 2, la réponse reste très proche de celle à 0 |
+| Top P (0,1)                   | Limiter l'IA aux mots les plus probables, pour une réponse plus prévisible                  | La réponse reste très proche de celle à température 0                                                                                                                                                                                                                                                   |
+| Longueur maximale (50 tokens) | Limiter la longueur de la réponse                                                           | La réponse est coupée net, et l'API l'indique (`MAX_TOKENS`). La limite n'est pas exacte : entre 48 et 60 tokens                                                                                                                                                                                        |
+
+Par défaut, le modèle utilise une température de 1 et un top P de 0,95 (voir la fiche du modèle, partie 2).
+
+![Température 0](captures/generate_content_temperature_0.png)
+
+![Température 2 : une réponse très proche de celle à température 0](captures/generate_content_temperature_2.png)
+
+![Longueur maximale de 50 tokens : réponse coupée](captures/generate_content_max_output_tokens_50.png)
+
+### Ce qu'on a retenu pour la requête finale
+
+- **Température et top P : non utilisés.** Pour ce modèle, Google conseille de garder les valeurs par défaut ([guide de génération de texte](https://ai.google.dev/gemini-api/docs/text-generation)), et nos tests n'ont montré aucun effet. Le ton et la forme de la réponse se règlent dans le prompt.
+- **Longueur maximale : non utilisée.** Une réponse coupée donnerait un JSON incomplet, donc inutilisable.
+- **Niveau de réflexion (`thinkingLevel`) : valeur par défaut**, la plus basse. Le tester plus haut est une piste (voir la partie 8).
+
 ## 7. Limites, risques et éthique
 
 ## 8. Pour la suite
