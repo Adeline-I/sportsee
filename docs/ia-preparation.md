@@ -54,6 +54,86 @@ Elle est envoyée automatiquement avec chaque requête, dans le header `x-goog-a
 
 ## 3. La requête
 
+### L'adresse
+
+| Élément | Valeur                                                                                          |
+| ------- | ----------------------------------------------------------------------------------------------- |
+| Méthode | `POST`                                                                                          |
+| URL     | `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent` |
+
+Dans Postman, le début de l'adresse est rangé dans la variable `baseUrl` de l'environnement.
+
+### Les headers
+
+| Header           | Valeur             | Rôle                                                        |
+| ---------------- | ------------------ | ----------------------------------------------------------- |
+| `x-goog-api-key` | La clé API         | Identifie le projet (voir la partie 2)                      |
+| `Content-Type`   | `application/json` | Indique que le body est du JSON. Postman l'ajoute tout seul |
+
+### Le body
+
+Le body contient trois parties :
+
+- `system_instruction` : les consignes données à l'IA, identiques pour tous les utilisateurs (voir la partie 5) ;
+- `contents` : les données de l'utilisateur (voir la partie 4) ;
+- `generationConfig` : la forme attendue de la réponse, décrite par un schéma (voir la partie 5).
+
+```json
+{
+  "system_instruction": { "parts": [{ "text": "Les consignes" }] },
+  "contents": [
+    { "parts": [{ "text": "Les données de l'utilisateur, en JSON" }] }
+  ],
+  "generationConfig": {
+    "responseFormat": {
+      "text": { "mimeType": "APPLICATION_JSON", "schema": {} }
+    }
+  }
+}
+```
+
+![Requête Generate training plan dans Postman](captures/generate_training_plan_requete.png)
+
+### La réponse
+
+Les informations utiles de la réponse :
+
+- `candidates[0].content.parts[0].text` : le plan. C'est du JSON écrit sous forme de texte : l'application doit le convertir (avec `JSON.parse`) pour s'en servir. Dans nos tests, le plan est toujours arrivé en un seul morceau, mais l'API peut découper un texte en plusieurs morceaux (`parts`), qu'il faut alors mettre bout à bout.
+- `finishReason` : `STOP` veut dire que la réponse est complète. `MAX_TOKENS` veut dire qu'elle a été coupée : le JSON serait alors incomplet et inutilisable.
+- `usageMetadata` : le nombre de tokens envoyés (`promptTokenCount`) et reçus (`candidatesTokenCount`). C'est ce qui sert à calculer le coût.
+- `thoughtSignature` : une version chiffrée, donc illisible, de la réflexion du modèle. Elle sert seulement dans une conversation en plusieurs échanges, pour que l'IA garde le fil. Notre requête ne fait qu'un échange : l'application peut l'ignorer.
+
+![Réponse de la version finale du prompt dans Postman](captures/generate_training_plan_reponse.png)
+
+### Les erreurs
+
+| Erreur                                         | Cause                                                                      | Que faire                                                        |
+| ---------------------------------------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| 400 `INVALID_ARGUMENT` (argument invalide)     | Clé invalide, ou body mal écrit                                            | Corriger la clé ou le body. Inutile de réessayer                 |
+| 403 `PERMISSION_DENIED` (permission refusée)   | Le projet n'a pas accès à l'API (vérification, facturation, clé divulguée) | Régler le compte ou créer une nouvelle clé. Inutile de réessayer |
+| 429 `RESOURCE_EXHAUSTED` (ressources épuisées) | Trop de requêtes (quotas dépassés, voir la partie 2)                       | Réessayer plus tard                                              |
+| 503 `UNAVAILABLE` (indisponible)               | L'IA est surchargée                                                        | Réessayer plus tard                                              |
+| 500 et autres erreurs 5xx                      | Problème passager chez Google                                              | Réessayer plus tard                                              |
+
+« Réessayer plus tard », c'est attendre de plus en plus longtemps entre deux essais (1 seconde, puis 2, puis 4…), avec un nombre maximum d'essais ([guide des erreurs](https://ai.google.dev/gemini-api/docs/troubleshooting)).
+
+Les erreurs 400 et 503 ont été testées dans Postman :
+
+![Erreur 400 : clé API invalide](captures/generate_content_error_invalid_api_key.png)
+
+![Erreur 400 : body mal écrit](captures/generate_content_error_invalid_request.png)
+
+![Erreur 503 : IA surchargée](captures/generate_content_error_model_overloaded.png)
+
+### Limiter les requêtes
+
+Chaque plan a un coût avec l'offre payante, et les quotas limitent le nombre de requêtes (voir la partie 2). Pour l'intégration dans l'application, on recommande de :
+
+- désactiver le bouton pendant que l'IA prépare le plan, pour éviter les doubles clics ;
+- enregistrer le plan reçu, pour que l'utilisateur le retrouve sans relancer l'IA ;
+- limiter le nombre de nouveaux plans par utilisateur, par exemple un par jour ;
+- limiter le nombre d'essais quand l'API renvoie une erreur 429 ou 503.
+
 ## 4. Les données envoyées
 
 ## 5. Le prompt
