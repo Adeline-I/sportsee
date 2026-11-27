@@ -198,6 +198,119 @@ Dans la requête, ces données sont envoyées sous forme de texte, dans `content
 
 ## 5. Le prompt
 
+### Sa structure
+
+Le prompt est découpé en parties, comme le demande la mission :
+
+| Partie            | Où elle se trouve                                                     | Rôle                                                                    |
+| ----------------- | --------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Contexte          | `system_instruction`                                                  | Qui est l'IA, et pour qui elle travaille                                |
+| Tâche             | `system_instruction`                                                  | Ce qu'on attend d'elle                                                  |
+| Données           | `system_instruction` (leur description) et `contents` (leurs valeurs) | Ce qu'elle reçoit, et comment le lire                                   |
+| Règles            | `system_instruction`                                                  | Ce qu'elle doit respecter : disponibilités, sécurité, alimentation, ton |
+| Format de réponse | `system_instruction` et le schéma de `generationConfig`               | La forme exacte de la réponse                                           |
+
+Les consignes, identiques pour tous les utilisateurs, sont séparées des données de chacun. Elles parlent à l'IA en « tu », et l'IA vouvoie l'utilisateur, comme le reste de l'application.
+
+### Le prompt final (version 5)
+
+```text
+# Contexte
+Tu es un coach de course à pied pour SportSee, une application de suivi sportif.
+Les utilisateurs sont des coureurs amateurs.
+
+# Tâche
+Crée un plan d'entraînement personnalisé pour aider l'utilisateur à atteindre son objectif.
+
+# Données reçues
+Tu reçois un JSON avec :
+- startDate et endDate : le premier et le dernier jour du plan (AAAA-MM-JJ). Si l'objectif est une course, elle a lieu le jour de endDate.
+- goal : l'objectif de l'utilisateur.
+- availability : les jours (day) et moments (time) où il peut courir, avec la durée maximale en minutes (maxDuration).
+- age : son âge.
+- sessions : ses séances des 8 dernières semaines, avec la date, la distance (km), la durée (minutes) et la vitesse moyenne (km/h). Si la liste est vide, considère que c'est un débutant.
+- longestDistance et maxWeeklyDistance : sa plus longue séance et sa semaine la plus chargée de ces 8 semaines (km).
+
+# Règles
+- Place les séances uniquement aux jours et moments de availability, entre startDate et endDate.
+- Ne dépasse jamais maxDuration, sauf pour la course elle-même.
+- La sécurité passe avant l'objectif.
+- Au début, pas de séance plus longue que longestDistance ni de semaine plus chargée que maxWeeklyDistance. Ensuite, augmente petit à petit.
+- Garde une vitesse proche de celle de ses séances passées. Tu peux l'augmenter légèrement, petit à petit.
+- Si l'objectif n'est pas atteignable sans risque, dis-le clairement dans message.
+- Ne promets aucun résultat ni aucune sécurité, et n'invente aucune information absente des données.
+- Donne seulement des conseils alimentaires généraux : pas de régime, pas de compléments alimentaires. Rappelle de les adapter à ses allergies et à ses habitudes alimentaires.
+- Ne donne aucun avis médical.
+- Vouvoie toujours l'utilisateur. Écris en français correct, avec des mots simples et un ton encourageant.
+
+# Format de réponse
+Réponds uniquement en JSON, selon le schéma fourni.
+```
+
+### La forme de la réponse
+
+Le schéma envoyé dans `generationConfig` impose cette forme :
+
+| Champ           | Contenu                                                                                                                                                                                           |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `message`       | Une présentation du plan en 2 à 4 phrases, avec un avertissement si l'objectif est ambitieux                                                                                                      |
+| `sessions`      | La liste des séances, dans l'ordre des dates. Pour chacune : `date`, `time` (matin, midi, après-midi ou soir), `distance` (km), `duration` (minutes) et `description` (comment aborder la séance) |
+| `nutritionTips` | 3 à 5 conseils alimentaires généraux                                                                                                                                                              |
+
+Le schéma complet se trouve dans la collection Postman (requête Generate training plan).
+
+### Exemple de réponse
+
+Réponse obtenue avec la version 5. La vitesse n'est pas fournie par l'IA : elle est calculée à partir de la distance et de la durée reçues dans la réponse.
+
+> Bonjour ! Voici votre plan d'entraînement personnalisé pour vous préparer progressivement à votre objectif de semi-marathon. Votre objectif est particulièrement ambitieux au vu de votre historique récent, veillez donc à bien écouter vos sensations et à respecter les temps de repos.
+
+| Date          | Moment | Distance | Durée   | Vitesse  | Description                                                                                          |
+| ------------- | ------ | -------- | ------- | -------- | ---------------------------------------------------------------------------------------------------- |
+| Mer. 2 déc.   | soir   | 6,5 km   | 42 min  | 9,3 km/h | Effectuez une course à allure modérée pour reprendre en douceur le mercredi soir.                    |
+| Dim. 6 déc.   | matin  | 9 km     | 60 min  | 9,0 km/h | Partez pour une sortie longue dominicale en gardant une allure confortable et régulière.             |
+| Mer. 9 déc.   | soir   | 6,5 km   | 42 min  | 9,3 km/h | Maintenez une vitesse constante tout au long de votre séance du mercredi.                            |
+| Dim. 13 déc.  | matin  | 10 km    | 65 min  | 9,2 km/h | Augmentez légèrement votre distance ce dimanche en restant à l'écoute de votre corps.                |
+| Mer. 16 déc.  | soir   | 6,8 km   | 44 min  | 9,3 km/h | Réalisez cette séance de milieu de semaine avec un effort stable et mesuré.                          |
+| Dim. 20 déc.  | matin  | 11,5 km  | 75 min  | 9,2 km/h | Profitez de votre matinée de dimanche pour une sortie longue un peu plus soutenue.                   |
+| Mer. 23 déc.  | soir   | 6,8 km   | 44 min  | 9,3 km/h | Courrez à votre rythme habituel pour garder de bonnes sensations.                                    |
+| Dim. 27 déc.  | matin  | 13 km    | 85 min  | 9,2 km/h | Consacrez votre dimanche matin à une sortie longue pour préparer l'endurance nécessaire.             |
+| Mer. 30 déc.  | soir   | 7 km     | 45 min  | 9,3 km/h | Restez sur une allure aisée lors de ce dernier mercredi de l'année.                                  |
+| Dim. 3 janv.  | matin  | 14 km    | 90 min  | 9,3 km/h | Effectuez votre dernière sortie longue significative en prenant soin de bien vous hydrater.          |
+| Mer. 6 janv.  | soir   | 5 km     | 33 min  | 9,1 km/h | Faites une courte course de décrassage pour garder le corps actif avant la fin de semaine.           |
+| Dim. 10 janv. | matin  | 21,1 km  | 140 min | 9,0 km/h | Jour de course pour votre semi-marathon, gérez votre effort du mieux possible du départ à l'arrivée. |
+
+Conseils alimentaires :
+
+- Pensez à adapter vos repas à vos habitudes alimentaires et à vos éventuelles allergies.
+- Veillez à vous hydrater régulièrement tout au long de la journée, sans attendre d'avoir soif.
+- Privilégiez des repas équilibrés contenant des glucides pour faire le plein d'énergie avant vos sorties.
+- Évitez les aliments trop gras ou trop lourds juste avant de courir pour faciliter votre digestion.
+
+Les textes sont recopiés tels quels, erreurs comprises s'il y en a : elles sont expliquées dans les versions testées et dans la partie 7.
+
+### Les versions testées
+
+Six versions du prompt ont été testées, toujours avec les mêmes données. Chaque réponse est enregistrée comme exemple dans la collection Postman.
+
+![Les exemples de la requête Generate training plan dans Postman](captures/generate_training_plan_exemples.png)
+
+| Version     | Ce qui a changé                                                                        | Ce qu'on a constaté                                                                                                           |
+| ----------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| V1          | Premier prompt, avec des types de séance et un exemple de séance                       | Tutoiement, départ trop brusque, vitesse incohérente, promesse (« en toute sécurité »), information inventée, mots techniques |
+| V2          | Règles plus précises : départ, vitesse, promesses, vouvoiement, mots simples           | Vouvoiement et vitesses corrigés. Envoyée deux fois : sans accents, puis avec. La forme varie d'une réponse à l'autre         |
+| V3          | Simplifiée : sans types de séance ni règles de coach. L'application fournit la vitesse | Meilleur français, objectif ambitieux signalé. Mais le départ est de nouveau trop brusque                                     |
+| V4          | Retour de la règle de départ précise                                                   | L'IA calcule mal la plus longue séance et la semaine la plus chargée, et recopie l'exemple                                    |
+| V5 (finale) | L'application fournit ces deux valeurs. Plus de promesse de sécurité, plus d'exemple   | Plus longue séance respectée, plus de promesse ni de copie. La semaine la plus chargée est encore dépassée                    |
+| V6          | Sans limite par semaine, français soigné, conseils de course                           | Pas de progrès, et l'IA recopie les consignes dans sa réponse                                                                 |
+
+Ce que ces tests montrent :
+
+- les règles simples (jours, durées, vouvoiement, vitesse) sont bien suivies ;
+- les règles qui demandent un calcul ne sont pas fiables, même quand on fournit les valeurs de référence ;
+- la même requête ne donne pas toujours la même réponse ;
+- l'IA a tendance à recopier ce qu'on lui écrit : l'exemple, puis les consignes.
+
 ## 6. Les réglages testés
 
 ## 7. Limites, risques et éthique
