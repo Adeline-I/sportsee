@@ -136,6 +136,66 @@ Chaque plan a un coût avec l'offre payante, et les quotas limitent le nombre de
 
 ## 4. Les données envoyées
 
+### Ce qu'on envoie
+
+| Donnée                                   | Contenu                                                                                      | D'où elle vient                                        |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `startDate`                              | Le premier jour du plan                                                                      | Choisie par l'utilisateur                              |
+| `endDate`                                | Le dernier jour du plan, et le jour de la course si l'objectif est une course                | Calculée par l'application (6 semaines après le début) |
+| `goal`                                   | L'objectif (reprendre, rester en forme, 5 km, 10 km, semi-marathon, marathon)                | Choisi dans une liste                                  |
+| `availability`                           | Les jours, les moments (matin, midi, après-midi, soir) et la durée maximale de chaque séance | Choisis dans des listes                                |
+| `age`                                    | L'âge                                                                                        | Profil SportSee                                        |
+| `sessions`                               | Les séances des 8 dernières semaines : date, distance (km), durée (minutes)                  | Séances SportSee                                       |
+| `speed`                                  | La vitesse moyenne de chaque séance (km/h)                                                   | Calculée par l'application                             |
+| `longestDistance` et `maxWeeklyDistance` | La plus longue séance et la semaine la plus chargée de ces 8 semaines (km)                   | Calculées par l'application                            |
+
+Quelques choix :
+
+- **Les données gardent les noms de champs de l'API SportSee.** L'application n'a qu'à les trier et à ajouter quelques valeurs, sans les transformer.
+- **Certaines valeurs sont calculées par l'application** (date de fin, vitesse, plus longue séance, semaine la plus chargée), parce que l'IA se trompe parfois dans les calculs.
+- **8 semaines de séances** suffisent pour montrer le niveau actuel. Plus loin dans le passé, le niveau n'est plus le même, et on enverrait des données inutiles.
+- **L'utilisateur choisit dans des listes, sans texte libre.** Avec un texte libre, il pourrait écrire une information sensible ou une phrase qui détourne l'IA de sa tâche.
+
+### Ce qu'on n'envoie pas, et pourquoi
+
+| Donnée                                                           | Pourquoi on ne l'envoie pas                                                                                                                                                                                                                                                                            |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Prénom, nom, photo, date d'inscription                           | Ces données permettent de savoir qui est la personne, et ne servent pas à créer le plan                                                                                                                                                                                                                |
+| Poids, taille, fréquence cardiaque                               | La CNIL les cite comme des données liées à la santé ([exemple pour les sportifs](https://cnil.fr/fr/la-collecte-de-donnees-pour-la-mesure-de-la-performance-physique-individuelle-des-sportifs-de-haut), [définition d'une donnée de santé](https://www.cnil.fr/fr/quest-ce-ce-quune-donnee-de-sante)) |
+| Calories                                                         | Elles sont calculées à partir du poids                                                                                                                                                                                                                                                                 |
+| Statistiques globales (distance totale, nombre total de séances) | C'est le niveau actuel qui compte pour le plan, pas le total depuis l'inscription                                                                                                                                                                                                                      |
+
+### Exemple
+
+Les données envoyées pour les tests (fictives) :
+
+```json
+{
+  "startDate": "2026-11-30",
+  "endDate": "2027-01-10",
+  "goal": "Semi-marathon",
+  "availability": [
+    { "day": "mercredi", "time": "soir", "maxDuration": 45 },
+    { "day": "dimanche", "time": "matin", "maxDuration": 90 }
+  ],
+  "age": 32,
+  "sessions": [
+    { "date": "2026-10-05", "distance": 9.2, "duration": 60, "speed": 9.2 },
+    { "date": "2026-10-12", "distance": 5.8, "duration": 38, "speed": 9.2 },
+    { "date": "2026-10-19", "distance": 4.4, "duration": 29, "speed": 9.1 },
+    { "date": "2026-10-23", "distance": 6.5, "duration": 42, "speed": 9.3 },
+    { "date": "2026-10-26", "distance": 5.3, "duration": 35, "speed": 9.1 },
+    { "date": "2026-11-02", "distance": 7, "duration": 45, "speed": 9.3 },
+    { "date": "2026-11-09", "distance": 5.5, "duration": 36, "speed": 9.2 },
+    { "date": "2026-11-16", "distance": 4.2, "duration": 28, "speed": 9.0 }
+  ],
+  "longestDistance": 9.2,
+  "maxWeeklyDistance": 10.9
+}
+```
+
+Dans la requête, ces données sont envoyées sous forme de texte, dans `contents` (voir la partie 3).
+
 ## 5. Le prompt
 
 ## 6. Les réglages testés
