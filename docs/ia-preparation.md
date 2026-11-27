@@ -337,4 +337,35 @@ Par défaut, le modèle utilise une température de 1 et un top P de 0,95 (voir 
 
 ## 7. Limites, risques et éthique
 
+### Les limites constatées
+
+- **Les calculs ne sont pas fiables.** Même avec les valeurs de référence fournies, l'IA dépasse la semaine la plus chargée de l'utilisateur au début du plan (voir la partie 5).
+- **La même requête ne donne pas toujours la même réponse.** Une réponse est arrivée sans aucun accent, la suivante avec.
+- **Des erreurs de français et des mots techniques reviennent** (« Courrez » au lieu de « Courez », « décrassage »), même quand le prompt les interdit.
+- **L'IA recopie ce qu'on lui écrit** : l'exemple de séance, puis les consignes elles-mêmes.
+- **La forme de la réponse est garantie, pas son contenu.** Google le précise : le schéma garantit un JSON correct, pas l'exactitude des valeurs ([sortie structurée](https://ai.google.dev/gemini-api/docs/structured-output)).
+- **Les conseils alimentaires restent généraux.** L'IA ne connaît ni les allergies ni le régime de l'utilisateur.
+- **Pas de calories.** Sans le poids, elles seraient très approximatives.
+
+### Les risques
+
+- **Une blessure**, si le plan demande trop d'effort trop tôt. Le plan reste une proposition : l'utilisateur doit écouter son corps.
+- **Un plan pris pour un avis médical.** L'IA n'est pas un médecin, et les conditions de Google interdisent cet usage (voir la partie 2).
+- **Une clé API volée**, si elle se trouve dans le code de l'application (voir la partie 8).
+
+### L'éthique
+
+- **Le moins de données possible.** On n'envoie ni l'identité, ni les données liées à la santé (voir la partie 4).
+- **Les données envoyées à Google.** Avec l'offre gratuite, Google peut utiliser ce qu'on lui envoie, sauf en Europe. Les tests n'utilisent que des données fictives, et la mise en ligne demandera l'offre payante (voir la partie 2).
+- **La transparence.** L'utilisateur doit savoir que le plan est créé par une IA, et accepter que ses données soient envoyées avant chaque demande.
+- **Un message permanent.** L'application affiche elle-même que le plan n'est pas un avis médical, sans compter sur l'IA pour le dire.
+- **Les mineurs.** Les conditions de Google interdisent l'usage par des moins de 18 ans : la fonctionnalité doit leur être fermée.
+- **Les régimes alimentaires et les croyances** ne sont pas pris en compte. Les demander poserait d'autres questions de données sensibles (voir la partie 8).
+
+### L'impact sur l'expérience utilisateur
+
+- **L'attente.** Un plan met quelques secondes à arriver : entre 3 et 8 secondes dans nos tests. L'application doit afficher un message d'attente.
+- **Les erreurs.** Quand l'IA est surchargée (erreur 503), l'attente peut dépasser une minute. L'application doit afficher un message clair et proposer de réessayer, sans bloquer l'utilisateur.
+- **La confiance.** Un plan avec des fautes ou des valeurs étranges peut faire douter de toute l'application.
+
 ## 8. Pour la suite
